@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
-* text=auto
+* text=auto eol=lf
+
+# Force LF for scripts
+*.sh text eol=lf
+
+# Treat images and other binaries as binary (no text diffs)
+*.png binary
+*.jpg binary
+*.pdf binary
+
+# Improve diffs for certain formats (optional)
+*.md  text diff=markdown
+*.ts  text diff=js
+*.tsx text diff=js
+
+# Git LFS examples (only if you choose to use LFS)
+# *.mp4 filter=lfs diff=lfs merge=lfs -text
