@@ -1,7 +1,6 @@
 # Concensor
 
-Concensor is a decentralized content moderation and consensus system inspired by blockchain principles.  
-It leverages Proof-of-Stake and verifiable decision logs to maintain trust, transparency, and community control.
+Concensor is a social media platform specifically for discussing politics
 
 ---
 
@@ -31,7 +30,7 @@ We welcome suggestions and bug reports! Please read CONTRIBUTING.md
 
 ## ⚖️ `LICENSE`
 ```markdown
-Copyright (c) 2025 Che-Yi Wu  
+Copyright (c) 2025 Che-Yi Wu 
 All rights reserved.
 
 This software and its source code are proprietary and confidential to Che-Yi Wu.  
