@@ -1,6 +1,6 @@
 # Concensor
 
-ConCensor is a decentralized content moderation and consensus system inspired by blockchain principles.  
+Concensor is a decentralized content moderation and consensus system inspired by blockchain principles.  
 It leverages Proof-of-Stake and verifiable decision logs to maintain trust, transparency, and community control.
 
 ---
