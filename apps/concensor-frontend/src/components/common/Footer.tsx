@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Logo from '../../assets/Logo.svg';
 import './Footer.css';
 
 const Footer = () => {
@@ -7,12 +8,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-left">
           <Link to="/" className="footer-logo">
-            <span className="footer-logo-text">
-              C<span className="footer-logo-o-wrapper">
-                <span className="footer-logo-o-upper"></span>
-                <span className="footer-logo-o-lower"></span>
-              </span>ncensor
-            </span>
+            <img src={Logo} alt="Concensor" className="footer-logo-image" />
           </Link>
         </div>
         <div className="footer-right">
