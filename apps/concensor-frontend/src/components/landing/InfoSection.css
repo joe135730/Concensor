@@ -24,48 +24,148 @@
 
 .info-header {
   display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.what-section-wrapper {
+  display: flex;
   align-items: center;
   gap: 2rem;
 }
 
+.what-title {
+  flex-shrink: 0;
+  margin-top: 0;
+  align-self: center;
+}
+
+.what-right-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  max-width: 500px;
+}
+
+.what-right-content .info-image-container {
+  width: 100%;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.what-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  min-height: 200px;
+  padding-left: 0;
+  margin-top: 0;
+}
+
+.why-section-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.why-title {
+  flex-shrink: 0;
+  margin-top: 0;
+  align-self: center;
+}
+
+.why-left-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  max-width: 500px;
+}
+
+.why-left-content .info-image-container {
+  width: 100%;
+  height: 200px;
+  flex-shrink: 0;
+}
+
+.why-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  min-height: 200px;
+  padding-left: 0;
+  margin-top: 0;
+}
+
 .info-title {
-  font-size: 2rem;
+  font-family: 'Kadwa', sans-serif;
+  font-size: 3.5rem;
   font-weight: bold;
   color: #1a2b4a;
   margin: 0;
   flex-shrink: 0;
+  line-height: 1;
 }
 
-.info-image-placeholder {
-  width: 200px;
-  height: 150px;
-  background-color: rgba(74, 144, 226, 0.2);
+.info-image-container {
+  width: 300px;
+  height: 200px;
   border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-.info-icon {
-  font-size: 3rem;
-  opacity: 0.7;
+.info-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .info-content {
+  font-family: 'Roboto', sans-serif;
   flex: 1;
+  margin-top: 0;
+  padding-left: 0;
 }
 
 .info-text {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #333;
+  color: #919191;
   margin: 0;
 }
 
 .info-text strong {
-  color: #1a2b4a;
+  color: #919191;
   font-weight: 600;
+}
+
+.how-section-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.how-title {
+  flex-shrink: 0;
+  margin-top: 0;
+  align-self: center;
+}
+
+.how-right-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  max-width: 500px;
+  min-height: 420px;
+  justify-content: center;
 }
 
 .how-features {
@@ -80,21 +180,67 @@
   gap: 1rem;
 }
 
-.how-icon {
-  font-size: 2rem;
+.how-icon-svg {
+  width: 67px;
+  height: 67px;
   flex-shrink: 0;
+}
+
+.how-feature-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.how-title-text {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.6;
+}
+
+.how-title-text strong {
+  color: #1A4B7C;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
 }
 
 .how-text {
   font-size: 1.1rem;
   line-height: 1.6;
-  color: #333;
+  color: #919191;
   margin: 0;
 }
 
-.how-text strong {
-  color: #1a2b4a;
-  font-weight: 600;
+/* Screens > 768px - center What, Why, and How sections */
+@media screen and (min-width: 769px) {
+  .info-card:first-child,
+  .info-card:nth-child(2),
+  .info-card:nth-child(3) {
+    display: flex;
+    justify-content: center;
+  }
+
+  .what-section-wrapper,
+  .why-section-wrapper,
+  .how-section-wrapper {
+    justify-content: center;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .what-right-content,
+  .why-left-content,
+  .how-right-content {
+    max-width: 500px;
+    flex: 0 1 auto;
+  }
+
+  .what-section-wrapper,
+  .why-section-wrapper{
+    padding-top: 2.5rem;
+  }
 }
 
 /* Mobile responsive */
@@ -122,10 +268,139 @@
     font-size: 1.5rem;
   }
 
-  .info-image-placeholder {
+  .info-image-container {
     width: 100%;
     max-width: 300px;
-    height: 120px;
+    height: 200px;
+  }
+
+  .what-section-wrapper {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .what-title {
+    text-align: center;
+  }
+
+  .what-right-content {
+    max-width: 100%;
+    width: 100%;
+    align-items: center;
+  }
+
+  .what-right-content .info-image-container {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .what-content {
+    width: 100%;
+    max-width: 400px;
+    min-height: auto;
+    margin: 0 auto;
+  }
+
+  /* Make image height match text height on mobile */
+  .what-right-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .what-right-content .info-image-container {
+    height: 200px;
+  }
+
+  .what-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .why-section-wrapper {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .why-title {
+    text-align: center;
+    order: -1; /* Put title first on mobile */
+  }
+
+  .why-left-content {
+    order: 0; /* Content comes after title */
+  }
+
+  .why-left-content {
+    max-width: 100%;
+    width: 100%;
+    align-items: center;
+  }
+
+  .why-left-content .info-image-container {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .why-content {
+    width: 100%;
+    max-width: 400px;
+    min-height: auto;
+    margin: 0 auto;
+  }
+
+  /* Make image height match text height on mobile */
+  .why-left-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .why-left-content .info-image-container {
+    height: 200px;
+  }
+
+  .why-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .how-section-wrapper {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .how-title {
+    text-align: center;
+  }
+
+  .how-right-content {
+    max-width: 100%;
+    width: 100%;
+    align-items: center;
+    min-height: auto;
+  }
+
+  .how-features {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .how-feature {
+    align-items: center;
+  }
+
+  .how-icon-svg {
+    width: 50px;
+    height: 50px;
   }
 
   .info-text,
