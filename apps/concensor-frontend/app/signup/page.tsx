@@ -1,6 +1,9 @@
-import SignUpPage from '@/pages/SignUpPage';
-
-export default function Page() {
-  return <SignUpPage />;
+export default function SignUpPage() {
+  return (
+    <div>
+      <h1>Sign Up Page</h1>
+      {/* Sign up form will be implemented here */}
+    </div>
+  );
 }
 
