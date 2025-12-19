@@ -12,6 +12,8 @@ const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,27 +37,55 @@ const LoginForm = () => {
     console.log('Google login clicked');
   };
 
+  const validateEmail = (emailValue: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailValue);
+  };
+
+  const handleEmailBlur = () => {
+    setEmailTouched(true);
+    if (email && !validateEmail(email)) {
+      setEmailError('Invalid email format! Please check again');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    // Clear error when user starts typing again
+    if (emailError && emailTouched) {
+      if (validateEmail(e.target.value)) {
+        setEmailError('');
+      }
+    }
+  };
+
   return (
     <div className="login-form-container">
       <h1 className="login-title">Login</h1>
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="email" className="form-label">
-            Email *
+            Email <span className="required-asterisk">*</span>
           </label>
           <input
             type="email"
             id="email"
-            className="form-input"
+            className={`form-input ${emailError ? 'form-input-error' : ''}`}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleEmailChange}
+            onBlur={handleEmailBlur}
             required
           />
+          <div className="field-error-container">
+            {emailError && <div className="field-error">{emailError}</div>}
+          </div>
         </div>
 
         <div className="form-group">
           <label htmlFor="password" className="form-label">
-            Password *
+            Password <span className="required-asterisk">*</span>
           </label>
           <input
             type="password"
@@ -65,6 +95,9 @@ const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <div className="field-error-container">
+            {/* Reserved space for potential password error */}
+          </div>
         </div>
 
         {error && <div className="form-error">{error}</div>}

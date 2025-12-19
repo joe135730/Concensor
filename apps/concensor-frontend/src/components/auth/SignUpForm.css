@@ -1,11 +1,11 @@
-.login-form-container {
+.signup-form-container {
   width: 100%;
   max-width: 450px;
   margin: 0 auto;
 }
 
-.login-title {
-  font-family: 'Kadwa', sans-serif;
+.signup-title {
+  font-family: 'Roboto', sans-serif;
   font-size: 2.5rem;
   font-weight: bold;
   color: white;
@@ -13,7 +13,7 @@
   margin: 4rem 0 2rem 0;
 }
 
-.login-form {
+.signup-form {
   background-color: white;
   border-radius: 8px;
   padding: 2.5rem;
@@ -27,6 +27,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .form-label {
@@ -65,6 +72,25 @@
   border-color: #FF0000;
 }
 
+.check-button {
+  background-color: transparent;
+  color: #333;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  font-weight: normal;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  text-decoration: underline;
+}
+
+.check-button:hover {
+  color: #1A4B7C;
+}
+
 .field-error-container {
   height: 1.4rem;
   display: flex;
@@ -90,7 +116,7 @@
   border-radius: 4px;
 }
 
-.sign-in-button {
+.create-account-button {
   background-color: #1A4B7C;
   color: white;
   border: none;
@@ -104,40 +130,13 @@
   margin-top: 0;
 }
 
-.sign-in-button:hover:not(:disabled) {
+.create-account-button:hover:not(:disabled) {
   background-color: #153a5f;
 }
 
-.sign-in-button:disabled {
+.create-account-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.google-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  background-color: white;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 0.75rem 1.5rem;
-  font-family: 'Roboto', sans-serif;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.google-button:hover {
-  background-color: #f8f9fa;
-  border-color: #bbb;
-}
-
-.google-icon {
-  width: 18px;
-  height: 18px;
 }
 
 .form-links {
@@ -169,18 +168,24 @@
 
 /* Mobile responsive */
 @media screen and (max-width: 768px) {
-  .login-form-container {
+  .signup-form-container {
     max-width: 100%;
     padding: 0 1rem;
   }
 
-  .login-title {
+  .signup-title {
     font-size: 2rem;
     margin-bottom: 1.5rem;
   }
 
-  .login-form {
+  .signup-form {
     padding: 2rem 1.5rem;
+  }
+
+  .label-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
 
