@@ -12,7 +12,7 @@
 ## Project Structure
 
 ```
-apps/concensor-frontend/
+apps/concensor-website/
 ├── app/                          # Next.js Routes & API
 │   ├── api/                     # 🔥 BACKEND LOGIC HERE
 │   │   ├── auth/
