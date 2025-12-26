@@ -1,2 +1,7 @@
 node_modules
 .env.local
+
+# Learning Materials
+API_CALLS_COMPLETE_GUIDE.md
+XSS_PREVENTION_GUIDE.md
+BACKEND_SETUP.md

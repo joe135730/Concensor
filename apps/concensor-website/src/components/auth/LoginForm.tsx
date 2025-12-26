@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import './LoginForm.css';
 
 const LoginForm = () => {
-  const router = useRouter();
+  const { login } = useAuth(); // Use auth context instead of direct API call
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,10 +20,9 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      const response = await api.login({ email, password });
-      // TODO: Store token and redirect
-      console.log('Login successful:', response);
-      router.push('/'); // Redirect to home page after login
+      // Use auth context login (handles redirect automatically)
+      await login(email, password);
+      // Redirect happens in AuthContext
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -103,7 +101,14 @@ const LoginForm = () => {
         {error && <div className="form-error">{error}</div>}
 
         <button type="submit" className="sign-in-button" disabled={loading}>
-          {loading ? 'Signing In...' : 'Sign In'}
+          {loading ? (
+            <>
+              <span className="spinner"></span>
+              Signing In...
+            </>
+          ) : (
+            'Sign In'
+          )}
         </button>
 
         <button

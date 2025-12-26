@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '../src/index.css';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Concensor',
@@ -13,7 +14,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      {/* 
+        suppressHydrationWarning on body prevents hydration errors from browser extensions
+        (like Grammarly) that modify the DOM by adding attributes to body tag
+        This is safe because these attributes don't affect React's functionality
+      */}
+      <body suppressHydrationWarning>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

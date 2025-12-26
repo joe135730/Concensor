@@ -1,0 +1,169 @@
+.home-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-content {
+  display: flex;
+  flex: 1;
+  background-color: #f5f5f5;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #1A4B7C;
+  padding: 2rem 1rem;
+  padding-top: 6rem; /* Add top padding to move sidebar content down (below header) */
+  min-height: calc(100vh - 80px); /* Adjust based on header height */
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-link {
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  text-decoration: underline;
+}
+
+.posts-main {
+  flex: 1;
+  padding: 2rem;
+  padding-top: 6rem; /* Add top padding to move content down (below header) */
+  background-color: #f5f5f5;
+}
+
+.posts-title {
+  font-family: 'Kadwa', sans-serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2rem;
+  margin-top: 0; /* Ensure no extra top margin */
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.post-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.post-content {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.comment-count {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.vote-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 400px;
+  margin-left: 2rem;
+}
+
+.agree-label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  color: #1A4B7C;
+  font-weight: 500;
+}
+
+.disagree-label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+.progress-bar {
+  flex: 1;
+  display: flex;
+  height: 30px;
+  border-radius: 15px;
+  overflow: hidden;
+  background-color: #e0e0e0;
+}
+
+.progress-agree {
+  background-color: #42a5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.progress-disagree {
+  background-color: #ef5350;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.loading,
+.error,
+.no-posts {
+  text-align: center;
+  padding: 2rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+}
+
