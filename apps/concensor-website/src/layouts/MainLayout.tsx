@@ -6,11 +6,17 @@ interface MainLayoutProps {
   children: ReactNode;
 }
 
+/**
+ * MainLayout - For unauthenticated pages (before login)
+ * 
+ * Includes Header + Footer (full navigation)
+ * Use this for: / (landing), /login, /signup
+ */
 const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div>
       <Header />
-      <main>{children}</main>
+      {children}
       <Footer />
     </div>
   );
