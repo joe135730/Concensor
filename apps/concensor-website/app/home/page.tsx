@@ -11,7 +11,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import AuthLayout from '@/layouts/AuthLayout';
+import Header from '@/components/common/Header';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
 import './page.css';
@@ -46,9 +46,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <AuthLayout>
-      <div className="home-page">
-        <div className="home-content">
+    <div className="home-page">
+      <Header />
+      <div className="home-content">
         <aside className="sidebar">
           <nav className="sidebar-nav">
             <a href="/home" className="sidebar-link active">Popular</a>
@@ -89,9 +89,8 @@ export default function HomePage() {
             ))}
           </div>
         </main>
-        </div>
       </div>
-    </AuthLayout>
+    </div>
   );
 }
 

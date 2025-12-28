@@ -1,18 +1,19 @@
 import BackgroundImage from '@/components/common/BackgroundImage';
-import MainLayout from '@/layouts/MainLayout';
+import Header from '@/components/common/Header';
+import Footer from '@/components/common/Footer';
 import LoginForm from '@/components/auth/LoginForm';
 import './page.css';
 
 export default function LoginPage() {
   return (
     <BackgroundImage>
-      <MainLayout>
-        <div className="login-page">
-          <div className="login-page-content">
-            <LoginForm />
-          </div>
+      <div className="login-page">
+        <Header />
+        <div className="login-page-content">
+          <LoginForm />
         </div>
-      </MainLayout>
+        <Footer />
+      </div>
     </BackgroundImage>
   );
 }
