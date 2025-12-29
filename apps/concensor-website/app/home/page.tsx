@@ -52,6 +52,11 @@ export default function HomePage() {
     }
   }, [router, isMobile, setSidebarOpen]);
 
+  const handleCreatePost = useCallback(() => {
+    // TODO: Navigate to create post page or open modal
+    console.log('Create post clicked');
+  }, []);
+
   // Redirect unauthenticated users to login
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -138,6 +143,13 @@ export default function HomePage() {
                   </button>
                 );
               })}
+              {/* Create Post Button in Sidebar */}
+              <button
+                className="sidebar-post-button"
+                onClick={handleCreatePost}
+              >
+                Post
+              </button>
             </nav>
           </aside>
 
@@ -171,6 +183,15 @@ export default function HomePage() {
             ))}
           </div>
         </main>
+
+        {/* Floating Create Post Button (Bottom Right) */}
+        <button
+          className="floating-create-post-button"
+          onClick={handleCreatePost}
+          aria-label="Create post"
+        >
+          <span className="plus-icon">+</span>
+        </button>
         </div>
       </div>
     </AuthLayout>
