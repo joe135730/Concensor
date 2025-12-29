@@ -14,8 +14,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import validator from 'validator'; // Library for input validation (email, etc.)
+import crypto from 'crypto'; // Node.js crypto module for generating secure random tokens
 import { db } from '@/lib/db'; // Database client
-import { hashPassword, generateToken } from '@/lib/auth'; // Auth utilities
+import { hashPassword } from '@/lib/auth'; // Auth utilities
+import { emailService } from '@/lib/email'; // Email service for sending verification emails
 
 /**
  * POST Handler for Signup
@@ -193,50 +195,56 @@ export async function POST(request: NextRequest) {
     // This is async because hashing takes time (intentionally slow to prevent brute force)
     const passwordHash = await hashPassword(password);
 
+    // ✅ Generate email verification token
+    // Create a secure random token for email verification
+    // crypto.randomBytes() generates cryptographically secure random bytes
+    // .toString('hex') converts bytes to hexadecimal string (64 characters)
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    
+    // ✅ Set token expiration (24 hours from now)
+    // Date.now() = current time in milliseconds
+    // 24 * 60 * 60 * 1000 = 24 hours in milliseconds
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     // ✅ Create new user in database
     // db.user.create() inserts a new record into the users table
+    // emailVerified: false - User must verify email before logging in
     const user = await db.user.create({
       data: {
-        username,           // Username (already sanitized)
-        email,              // Email (already sanitized and normalized)
-        passwordHash,       // Hashed password (NOT plain text!)
-        tokenVersion: 0,    // Start at 0, increments when password changes (invalidates old tokens)
+        username,                      // Username (already sanitized)
+        email,                         // Email (already sanitized and normalized)
+        passwordHash,                  // Hashed password (NOT plain text!)
+        tokenVersion: 0,               // Start at 0, increments when password changes (invalidates old tokens)
+        emailVerified: false,          // Email not verified yet
+        emailVerificationToken: verificationToken, // Token for email verification
+        emailVerificationExpires: verificationExpires, // Token expiration time
       },
     });
 
-    // ✅ Generate JWT token
-    // Create a token containing user information
-    // This token will be used to authenticate the user in future requests
-    const token = generateToken({
-      userId: user.id,              // User's unique ID
-      email: user.email,            // User's email
-      tokenVersion: user.tokenVersion, // Token version (for invalidation)
-    });
+    // ✅ Send verification email
+    // emailService.sendVerificationEmail() sends an email with verification link
+    // The email contains a link like: /api/auth/verify-email?token=xxx
+    try {
+      await emailService.sendVerificationEmail(
+        user.email,
+        verificationToken,
+        user.username || undefined
+      );
+    } catch (emailError) {
+      // If email sending fails, log error but don't fail signup
+      // User can request a new verification email later
+      console.error('Failed to send verification email:', emailError);
+      // Continue with signup - user can resend verification email later
+    }
 
-    // ✅ Create response with user data
-    // NextResponse.json() creates a JSON response
-    const response = NextResponse.json({
-      success: true,                // Indicates successful signup
-      user: {
-        id: user.id,               // User ID (don't send passwordHash!)
-        email: user.email,         // User email
-        username: user.username,   // Username
-      },
+    // ✅ Return success response (NO auto-login)
+    // User must verify email before they can log in
+    // Don't set authentication cookie - user is not logged in yet
+    return NextResponse.json({
+      success: true,
+      message: 'Account created successfully! Please check your email to verify your account.',
+      // Don't include user data or set cookie - user must verify email first
     });
-
-    // ✅ Set HttpOnly cookie with token
-    // HttpOnly = JavaScript cannot access (prevents XSS token theft)
-    // This is more secure than sending token in response body
-    response.cookies.set('token', token, {
-      httpOnly: true,                              // JavaScript cannot read this cookie
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      sameSite: 'strict',                          // Prevents CSRF attacks
-      maxAge: 60 * 60 * 24 * 7,                   // Cookie expires in 7 days (seconds)
-      path: '/',                                   // Cookie available for all paths
-    });
-
-    // Return response (cookie is automatically sent to browser)
-    return response;
   } catch (error: any) {
     // Log error for debugging (in production, use proper logging service)
     // Log full error details in development to help debug

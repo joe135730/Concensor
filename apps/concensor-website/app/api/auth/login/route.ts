@@ -143,6 +143,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ✅ Check if email is verified (for email/password users only)
+    // Google OAuth users don't need email verification (Google already verified their email)
+    if (user.provider === 'email' && !user.emailVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+          requiresVerification: true, // Flag to indicate email verification needed
+        },
+        { status: 403 } // HTTP 403 = Forbidden (account exists but not verified)
+      );
+    }
+
     // ✅ Generate JWT token
     // Create a token containing user information
     // This token proves the user is authenticated

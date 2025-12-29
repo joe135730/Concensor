@@ -1,9 +1,30 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import BackgroundImage from '@/components/common/BackgroundImage';
 import MainLayout from '@/layouts/MainLayout';
 import LoginForm from '@/components/auth/LoginForm';
+import { useAuth } from '@/contexts/AuthContext';
 import './page.css';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
+
+  // Redirect authenticated users to home page
+  // Prevents authenticated users from accessing login page (e.g., browser back button)
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push('/home');
+    }
+  }, [isAuthenticated, loading, router]);
+
+  // Show nothing while checking auth or if authenticated (will redirect)
+  if (loading || isAuthenticated) {
+    return null;
+  }
+
   return (
     <BackgroundImage>
       <MainLayout>

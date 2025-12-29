@@ -250,7 +250,8 @@ export const useSignUpForm = () => {
     try {
       const response = await api.signup({ email, password, username });
       console.log('Signup successful:', response);
-      router.push('/home'); // Redirect to posts page after signup
+      // Redirect to verification page with email as query parameter
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       const errorMessage = err.message || 'Sign up failed. Please check your information.';
       

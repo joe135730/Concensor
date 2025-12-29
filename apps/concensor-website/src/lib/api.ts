@@ -328,6 +328,22 @@ export const api = {
       .then((response) => response.data),
 
   /**
+   * Resend Verification Email
+   * 
+   * Sends a new email verification link to the user.
+   * Useful if user didn't receive the original email or link expired.
+   * 
+   * @param email - User's email address
+   * @returns Promise with success status and alreadyVerified flag
+   * 
+   * Example:
+   *   await api.resendVerification('user@example.com');
+   */
+  resendVerification: (email: string) =>
+    apiClient.post<{ success: boolean; message: string; alreadyVerified?: boolean }>('/api/auth/resend-verification', { email })
+      .then((response) => response.data),
+
+  /**
    * Ideology API
    * 
    * @param userId - ID of user to get ideology for
