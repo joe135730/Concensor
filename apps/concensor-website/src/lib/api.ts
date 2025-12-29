@@ -27,7 +27,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
  */
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE, // Base URL prepended to all requests (empty = same origin)
-  headers: {
+    headers: {
     'Content-Type': 'application/json', // Tell server we're sending JSON
   },
   withCredentials: true, // Include cookies in requests (needed for HttpOnly cookies)
@@ -158,8 +158,8 @@ apiClient.interceptors.response.use(
       // This happens when token expires or is invalid
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
-      }
-      
+  }
+
       // Optional: Automatically redirect to login page
       // Uncomment if you want automatic redirect:
       // window.location.href = '/login';
@@ -179,7 +179,7 @@ apiClient.interceptors.response.use(
     
     // Reject with error message (will be caught in component's catch block)
     return Promise.reject(new Error(errorMessage));
-  }
+}
 );
 
 /**

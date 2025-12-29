@@ -31,11 +31,11 @@ export default function LoginPage() {
   return (
     <BackgroundImage>
       <MainLayout>
-        <div className="login-page">
-          <div className="login-page-content">
-            <LoginForm />
-          </div>
+      <div className="login-page">
+        <div className="login-page-content">
+          <LoginForm />
         </div>
+      </div>
       </MainLayout>
     </BackgroundImage>
   );

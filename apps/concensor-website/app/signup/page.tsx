@@ -30,11 +30,11 @@ export default function SignUpPage() {
   return (
     <BackgroundImage>
       <MainLayout>
-        <div className="signup-page">
-          <div className="signup-page-content">
-            <SignUpForm />
-          </div>
+      <div className="signup-page">
+        <div className="signup-page-content">
+          <SignUpForm />
         </div>
+      </div>
       </MainLayout>
     </BackgroundImage>
   );

@@ -5,7 +5,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 1001; /* Higher than sidebar to keep header and hamburger visible */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -31,6 +31,45 @@
 .header-left {
   display: flex;
   align-items: center;
+  gap: 1rem; /* Space between hamburger and logo */
+}
+
+/* Hamburger Menu Button in Header */
+.header-hamburger-button {
+  background-color: transparent;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.header-hamburger-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-hamburger-button .hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 24px;
+  height: 18px;
+  position: relative;
+}
+
+.header-hamburger-button .hamburger-icon span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+  border-radius: 2px;
+  transition: none; /* Keep as 3 lines always */
 }
 
 .header-logo {

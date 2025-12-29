@@ -10,20 +10,47 @@
  * API: /api/posts
  */
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AuthLayout from '@/layouts/AuthLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
 import './page.css';
 
+const CATEGORIES = [
+  { id: 'popular', name: 'Popular', slug: null },
+  { id: 'immigration', name: 'Immigration', slug: 'immigration' },
+  { id: 'abortion', name: 'Abortion', slug: 'abortion' },
+  { id: 'civil-rights', name: 'Civil Rights', slug: 'civil-rights' },
+  { id: 'public-safety', name: 'Public Safety', slug: 'public-safety' },
+] as const;
+
 export default function HomePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const { sidebarOpen, setSidebarOpen, isMobile } = useSidebar();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const currentCategorySlug = searchParams.get('category');
+  const currentCategory = CATEGORIES.find(
+    cat => cat.slug === currentCategorySlug || (currentCategorySlug === null && cat.slug === null)
+  ) || CATEGORIES[0];
+
+  const handleCategoryClick = useCallback((category: typeof CATEGORIES[number]) => {
+    if (category.slug) {
+      router.push(`/home?category=${category.slug}`);
+    } else {
+      router.push('/home');
+    }
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [router, isMobile, setSidebarOpen]);
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -56,7 +83,27 @@ export default function HomePage() {
 
       fetchPosts();
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, isAuthenticated, currentCategorySlug]);
+
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    if (sidebarOpen && isMobile) {
+      const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        const sidebar = document.querySelector('.sidebar');
+        const hamburger = document.querySelector('.header-hamburger-button');
+
+        if (sidebar && hamburger && !sidebar.contains(target) && !hamburger.contains(target)) {
+          setSidebarOpen(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [sidebarOpen, isMobile, setSidebarOpen]);
 
   // Show nothing while checking auth or if not authenticated (will redirect)
   if (authLoading || !isAuthenticated) {
@@ -67,18 +114,35 @@ export default function HomePage() {
     <AuthLayout>
       <div className="home-page">
         <div className="home-content">
-        <aside className="sidebar">
-          <nav className="sidebar-nav">
-            <a href="/home" className="sidebar-link active">Popular</a>
-            <a href="/home?category=immigration" className="sidebar-link">Immigration</a>
-            <a href="/home?category=abortion" className="sidebar-link">Abortion</a>
-            <a href="/home?category=civil-rights" className="sidebar-link">Civil Rights</a>
-            <a href="/home?category=public-safety" className="sidebar-link">Public Safety</a>
-          </nav>
-        </aside>
-        
-        <main className="posts-main">
-          <h1 className="posts-title">Popular</h1>
+          {/* Sidebar Overlay (mobile only when sidebar is open) */}
+          {sidebarOpen && isMobile && (
+            <div
+              className="sidebar-overlay"
+              onClick={() => setSidebarOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Sidebar */}
+          <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+            <nav className="sidebar-nav">
+              {CATEGORIES.map((category) => {
+                const isActive = currentCategory.id === category.id;
+                return (
+                  <button
+                    key={category.id}
+                    className={`sidebar-link ${isActive ? 'active' : ''}`}
+                    onClick={() => handleCategoryClick(category)}
+                  >
+                    {category.name}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          <main className={`posts-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <h1 className="posts-title">{currentCategory.name}</h1>
           
           {loading && <div className="loading">Loading posts...</div>}
           {error && <div className="error">{error}</div>}

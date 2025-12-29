@@ -7,11 +7,11 @@ import './page.css';
 export default function HomePage() {
   return (
     <MainLayout>
-      <div className="home-page">
-        <HeroSection />
-        <FeaturesSection />
-        <InfoSection />
-      </div>
+    <div className="home-page">
+      <HeroSection />
+      <FeaturesSection />
+      <InfoSection />
+    </div>
     </MainLayout>
   );
 }

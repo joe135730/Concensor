@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import '../src/index.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 
 export const metadata: Metadata = {
   title: 'Concensor',
@@ -21,7 +22,9 @@ export default function RootLayout({
       */}
       <body suppressHydrationWarning>
         <AuthProvider>
-          {children}
+          <SidebarProvider>
+            {children}
+          </SidebarProvider>
         </AuthProvider>
       </body>
     </html>

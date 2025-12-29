@@ -2,26 +2,51 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  padding-top: 4rem;
 }
 
 .home-content {
   display: flex;
   flex: 1;
   background-color: #f5f5f5;
+  position: relative;
 }
 
+/* Sidebar Overlay (mobile only when sidebar is open) */
+.sidebar-overlay {
+  position: fixed;
+  top: 0; /* Start below header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998; /* Below sidebar (999) but above content */
+  display: none; /* Hidden by default */
+}
+
+/* Mobile: Show overlay when sidebar is open */
+@media screen and (max-width: 1023px) {
+  .sidebar-overlay {
+    display: block;
+  }
+}
+
+/* Sidebar - Base styles */
 .sidebar {
   width: 250px;
   background-color: #1A4B7C;
-  padding: 2rem 1rem;
-  padding-top: 6rem; /* Add top padding to move sidebar content down (below header) */
-  min-height: calc(100vh - 80px); /* Adjust based on header height */
+  padding: 0 1rem 2rem 1rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: all 0.3s ease;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-top: 1.5rem;
+  text-align: left;
 }
 
 .sidebar-link {
@@ -32,6 +57,12 @@
   font-family: 'Roboto', sans-serif;
   font-size: 1rem;
   transition: background-color 0.2s;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  display: block;
 }
 
 .sidebar-link:hover {
@@ -43,11 +74,77 @@
   text-decoration: underline;
 }
 
+/* Desktop: Sidebar behavior (≥ 1024px) */
+@media screen and (min-width: 1024px) {
+  .sidebar {
+    position: relative; /* In normal flow */
+    min-height: calc(100vh - 80px);
+  }
+
+  /* Hide sidebar when closed on desktop */
+  .sidebar:not(.open) {
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .sidebar.open {
+    width: 250px;
+    opacity: 1;
+  }
+
+  .sidebar-overlay {
+    display: none !important; /* No overlay on desktop */
+  }
+}
+
+/* Mobile: Sidebar behavior (< 1024px) */
+@media screen and (max-width: 1023px) {
+  .sidebar {
+    position: fixed; /* Fixed overlay on mobile */
+    top: 70px; /* Start below header - don't cover header */
+    left: 0;
+    bottom: 0;
+    height: calc(100vh - 80px);
+    z-index: 999; /* Above overlay (998) but below header (1001) */
+    transform: translateX(-100%); /* Hidden by default */
+    min-height: auto;
+  }
+
+  .sidebar.open {
+    transform: translateX(0); /* Show when open */
+  }
+}
+
+/* Posts Main Content Area */
 .posts-main {
   flex: 1;
-  padding: 2rem;
-  padding-top: 6rem; /* Add top padding to move content down (below header) */
+  padding: 2rem 2rem 2rem 2rem;
   background-color: #f5f5f5;
+  transition: margin-left 0.3s ease;
+  min-width: 0; /* Allow flex shrinking */
+}
+
+/* Desktop: Posts shift when sidebar opens/closes */
+@media screen and (min-width: 1024px) {
+  .posts-main {
+    margin-left: 0; /* Default: align to screen left when sidebar closed */
+  }
+
+  .posts-main.sidebar-open {
+    margin-left: 0; /* When sidebar open, it's in flex flow, so no margin needed */
+  }
+}
+
+/* Mobile: Posts don't move, always align to screen left */
+@media screen and (max-width: 1023px) {
+  .posts-main {
+    width: 100%;
+    margin-left: 0; /* Always align to screen left on mobile */
+    padding-top: 2rem;
+  }
 }
 
 .posts-title {
@@ -56,7 +153,8 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 2rem;
-  margin-top: 0; /* Ensure no extra top margin */
+  margin-top: 0;
+  text-align: left; /* Always left align */
 }
 
 .posts-list {
@@ -70,6 +168,7 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left; /* Always left align */
 }
 
 .post-title {
@@ -78,6 +177,7 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 0.75rem;
+  text-align: left;
 }
 
 .post-content {
@@ -86,6 +186,7 @@
   color: #666;
   margin-bottom: 1rem;
   line-height: 1.5;
+  text-align: left;
 }
 
 .post-footer {
@@ -166,4 +267,3 @@
 .error {
   color: #d32f2f;
 }
-

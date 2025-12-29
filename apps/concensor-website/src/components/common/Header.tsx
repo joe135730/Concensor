@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '../../assets/Logo.svg';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import './Header.css';
 
 const Header = () => {
@@ -12,6 +13,17 @@ const Header = () => {
   const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Get sidebar context (only available on /home page)
+  const isHomePage = pathname === '/home';
+  let sidebarContext = null;
+  if (isHomePage) {
+    try {
+      sidebarContext = useSidebar();
+    } catch (e) {
+      // SidebarContext not available (shouldn't happen, but handle gracefully)
+    }
+  }
 
   // List of authenticated routes (routes that require login)
   // If we're on these routes, assume user is authenticated during loading
@@ -72,20 +84,20 @@ const Header = () => {
     }
     
     // Otherwise, show public header layout
-    return (
-      <header className="header">
-        <div className="header-container">
-          <div className="header-left">
-            <Link href="/" className="header-logo">
-              <img src={Logo} alt="Concensor" className="logo-image" />
-            </Link>
-          </div>
-          <nav className="header-nav">
-            <Link href="/" className="nav-link">Home</Link>
-            <Link href="/about" className="nav-link">About</Link>
-            <Link href="/contact" className="nav-link">Contact</Link>
-          </nav>
-          <div className="header-right">
+  return (
+    <header className="header">
+      <div className="header-container">
+        <div className="header-left">
+          <Link href="/" className="header-logo">
+            <img src={Logo} alt="Concensor" className="logo-image" />
+          </Link>
+        </div>
+        <nav className="header-nav">
+          <Link href="/" className="nav-link">Home</Link>
+          <Link href="/about" className="nav-link">About</Link>
+          <Link href="/contact" className="nav-link">Contact</Link>
+        </nav>
+        <div className="header-right">
             {/* Show nothing while loading */}
           </div>
         </div>
@@ -97,6 +109,21 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <div className="header-left">
+          {/* Hamburger Menu - Only show on /home page */}
+          {isHomePage && sidebarContext && (
+            <button
+              className="header-hamburger-button"
+              onClick={sidebarContext.toggleSidebar}
+              aria-label="Toggle sidebar"
+              aria-expanded={sidebarContext.sidebarOpen}
+            >
+              <span className="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            </button>
+          )}
           <Link href={isAuthenticated ? "/home" : "/"} className="header-logo">
             <img src={Logo} alt="Concensor" className="logo-image" />
           </Link>
@@ -158,7 +185,7 @@ const Header = () => {
               )}
             </div>
           ) : (
-            <Link href="/login" className="login-button">Login</Link>
+          <Link href="/login" className="login-button">Login</Link>
           )}
         </div>
       </div>
