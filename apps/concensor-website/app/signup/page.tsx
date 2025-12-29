@@ -16,7 +16,9 @@ export default function SignUpPage() {
   // Prevents authenticated users from accessing signup page (e.g., browser back button)
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.push('/home');
+      // Use replace() to avoid adding signup page to history
+      // This prevents glitch and makes redirect immediate
+      router.replace('/home');
     }
   }, [isAuthenticated, loading, router]);
 

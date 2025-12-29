@@ -51,8 +51,9 @@ export default function VerifyEmailPage() {
       // User is authenticated, redirect to home
       setIsVerified(true);
       // Show success message briefly, then redirect
+      // Use replace() to avoid adding verify-email to history
       setTimeout(() => {
-        router.push('/home');
+        router.replace('/home');
       }, 2000);
     }
   }, [isAuthenticated, authLoading, router]);
@@ -66,7 +67,7 @@ export default function VerifyEmailPage() {
         if (isAuth) {
           setIsVerified(true);
           setTimeout(() => {
-            router.push('/home');
+            router.replace('/home');
           }, 500);
         }
       }
@@ -87,7 +88,7 @@ export default function VerifyEmailPage() {
     
     if (isAuth) {
       // User is verified - go directly to home, don't show login page
-      router.push('/home');
+      router.replace('/home');
     } else {
       // Not verified - navigate to intended destination
       router.push(href);
@@ -127,7 +128,7 @@ export default function VerifyEmailPage() {
     setShowVerifiedModal(false);
     // Refresh auth state to ensure we're logged in
     await checkAuth();
-    router.push('/home');
+    router.replace('/home');
   };
 
   // Get email provider for mailto link

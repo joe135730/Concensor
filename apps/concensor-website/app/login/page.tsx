@@ -16,11 +16,14 @@ export default function LoginPage() {
   // Prevents authenticated users from accessing login page (e.g., browser back button)
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.push('/home');
+      // Use replace() to avoid adding login page to history
+      // This prevents glitch and makes redirect immediate
+      router.replace('/home');
     }
   }, [isAuthenticated, loading, router]);
 
   // Show nothing while checking auth or if authenticated (will redirect)
+  // This prevents the header from glitching during redirect
   if (loading || isAuthenticated) {
     return null;
   }
