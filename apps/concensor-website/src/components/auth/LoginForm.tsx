@@ -1,18 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import './LoginForm.css';
 
 const LoginForm = () => {
   const { login } = useAuth(); // Use auth context instead of direct API call
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
+
+  // Check for error messages from URL (e.g., from Google OAuth callback)
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'email_exists_use_password') {
+      setError('This email is already registered. Please login with your password, then you can link your Google account in your profile settings.');
+    } else if (errorParam === 'google_denied') {
+      setError('Google login was cancelled.');
+    } else if (errorParam === 'oauth_failed') {
+      setError('Google login failed. Please try again.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +45,9 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log('Google login clicked');
+    // Redirect to Google OAuth initiation endpoint
+    // This will redirect user to Google's login page
+    window.location.href = '/api/auth/google';
   };
 
   const validateEmail = (emailValue: string): boolean => {

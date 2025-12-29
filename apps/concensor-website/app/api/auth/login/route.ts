@@ -109,6 +109,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // ✅ Check if user has a password
+    // If user registered with Google only (no password), they can't use password login
+    // But if they have both (email + Google linked), allow password login
+    if (!user.passwordHash) {
+      // User has no password - they must use Google login
+      if (user.googleId) {
+        return NextResponse.json(
+          { error: 'This account uses Google login. Please login with Google.' },
+          { status: 401 } // HTTP 401 = Unauthorized
+        );
+      } else {
+        // Edge case: user has no password and no Google ID (shouldn't happen)
+        return NextResponse.json(
+          { error: 'Account configuration error. Please contact support.' },
+          { status: 500 } // HTTP 500 = Internal Server Error
+        );
+      }
+    }
+
     // ✅ Verify password
     // Compare the provided password with the hashed password in database
     // verifyPassword() uses bcrypt to securely compare passwords
@@ -121,6 +140,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 } // HTTP 401 = Unauthorized
+      );
+    }
+
+    // ✅ Check if email is verified (for email/password users only)
+    // Google OAuth users don't need email verification (Google already verified their email)
+    if (user.provider === 'email' && !user.emailVerified) {
+      return NextResponse.json(
+        { 
+          error: 'Please verify your email address before logging in. Check your inbox for the verification link.',
+          requiresVerification: true, // Flag to indicate email verification needed
+        },
+        { status: 403 } // HTTP 403 = Forbidden (account exists but not verified)
       );
     }
 

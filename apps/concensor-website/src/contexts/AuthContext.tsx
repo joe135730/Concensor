@@ -70,7 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await api.login({ email, password });
     setUser(response.user);
     setIsAuthenticated(true);
-    router.push('/home'); // Redirect to posts page after login
+    // Use replace() instead of push() to avoid adding to history
+    // This prevents the login page from being in browser history
+    // and makes the redirect faster (no glitch)
+    router.replace('/home'); // Redirect to posts page after login
   };
 
   /**

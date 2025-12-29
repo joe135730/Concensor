@@ -11,39 +11,57 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AuthLayout from '@/layouts/AuthLayout';
+import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
 import './page.css';
 
 export default function HomePage() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Redirect unauthenticated users to login
   useEffect(() => {
-    // Fetch posts when component mounts
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        const data = await api.getPosts();
-        // API returns { posts: [], total: 0, page: 1 } or array directly
-        if (Array.isArray(data)) {
-          setPosts(data);
-        } else if (data.posts) {
-          setPosts(data.posts);
-        } else {
-          setPosts([]);
-        }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load posts');
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!authLoading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, authLoading, router]);
 
-    fetchPosts();
-  }, []);
+  useEffect(() => {
+    // Only fetch posts if user is authenticated
+    if (!authLoading && isAuthenticated) {
+      const fetchPosts = async () => {
+        try {
+          setLoading(true);
+          const data = await api.getPosts();
+          // API returns { posts: [], total: 0, page: 1 } or array directly
+          if (Array.isArray(data)) {
+            setPosts(data);
+          } else if (data.posts) {
+            setPosts(data.posts);
+          } else {
+            setPosts([]);
+          }
+        } catch (err: any) {
+          setError(err.message || 'Failed to load posts');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchPosts();
+    }
+  }, [authLoading, isAuthenticated]);
+
+  // Show nothing while checking auth or if not authenticated (will redirect)
+  if (authLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <AuthLayout>

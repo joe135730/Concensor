@@ -7,13 +7,20 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  email        String   @unique
-  passwordHash String
-  tokenVersion Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                       String    @id @default(uuid())
+  username                 String?   @unique // Optional for OAuth users
+  email                    String    @unique
+  passwordHash             String? // Optional for OAuth users (Google users don't have passwords)
+  googleId                 String?   @unique // Google user ID for OAuth users
+  provider                 String    @default("email") // "email" or "google"
+  profilePicture           String? // Profile picture URL (from Google or uploaded)
+  tokenVersion             Int       @default(0)
+  // Email verification fields
+  emailVerified            Boolean   @default(false) // Whether email has been verified
+  emailVerificationToken   String? // Temporary token for email verification
+  emailVerificationExpires DateTime? // Token expiration time
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   @@map("users")
 }
