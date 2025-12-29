@@ -10,7 +10,7 @@
   font-weight: bold;
   color: white;
   text-align: center;
-  margin: 4rem 0 2rem 0;
+  margin: 2rem 0 2rem 0;
 }
 
 .login-form {
@@ -196,7 +196,7 @@
 
   .login-title {
     font-size: 2rem;
-    margin-bottom: 1.5rem;
+    margin: 1.5rem 0 1.5rem 0; /* Consistent margin on mobile */
   }
 
   .login-form {
