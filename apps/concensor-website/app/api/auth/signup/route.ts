@@ -173,6 +173,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUserByEmail) {
+      // Check if user registered with Google OAuth
+      if (existingUserByEmail.provider === 'google') {
+        return NextResponse.json(
+          { error: 'Email has been registered with Google, please login with Google' },
+          { status: 409 } // HTTP 409 = Conflict
+        );
+      }
+      // Email registered with email/password
       return NextResponse.json(
         { error: 'Email has been registered, Please login' },
         { status: 409 } // HTTP 409 = Conflict
