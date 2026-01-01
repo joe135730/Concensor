@@ -18,7 +18,7 @@ export default function LoginPage() {
     if (!loading && isAuthenticated) {
       // Use replace() to avoid adding login page to history
       // This prevents glitch and makes redirect immediate
-      router.replace('/home');
+      router.replace('/');
     }
   }, [isAuthenticated, loading, router]);
 

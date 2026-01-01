@@ -82,7 +82,7 @@ export default function PostDetailsPage() {
     try {
       setDeleting(true);
       await api.deletePost(post.id);
-      router.push('/home');
+      router.push('/');
     } catch (err: any) {
       alert(err.message || 'Failed to delete post');
     } finally {
@@ -220,7 +220,7 @@ export default function PostDetailsPage() {
       <AuthLayout>
         <div className="post-details-page">
           <div className="error">{error || 'Post not found'}</div>
-          <Link href="/home" className="back-link">
+          <Link href="/" className="back-link">
             ← Back to Posts
           </Link>
         </div>
@@ -240,7 +240,7 @@ export default function PostDetailsPage() {
       <div className="post-details-page">
         <div className="post-details-container">
           {/* Back Link */}
-          <Link href="/home" className="back-link">
+          <Link href="/" className="back-link">
             ← Back to Posts
           </Link>
 
@@ -248,14 +248,14 @@ export default function PostDetailsPage() {
           <div className="post-header">
             <div className="post-categories">
               <Link
-                href={`/home?mainCategory=${post.mainCategory.slug}`}
+                href={`/category/${post.mainCategory.slug}`}
                 className="category-link main-category"
               >
                 {post.mainCategory.name}
               </Link>
               <span className="category-separator">/</span>
               <Link
-                href={`/home?subCategory=${post.subCategory.slug}`}
+                href={`/category/${post.mainCategory.slug}/${post.subCategory.slug}`}
                 className="category-link sub-category"
               >
                 {post.subCategory.name}

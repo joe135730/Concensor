@@ -5,8 +5,7 @@
  * you only need to change the base URL here - all your components will continue to work.
  * 
  * Features:
- * - Automatic token injection (if using localStorage)
- * - Cookie support (for HttpOnly cookies)
+ * - HttpOnly cookie support (automatic authentication via cookies)
  * - Global error handling
  * - Request timeout
  * - Automatic retry for network errors and server errors (5xx)
@@ -37,25 +36,14 @@ const apiClient: AxiosInstance = axios.create({
 /**
  * Request Interceptor: Runs BEFORE every API request
  * 
- * Purpose: Automatically add authentication token to request headers
- * This way, you don't need to manually add the token in every API call
+ * Note: Authentication is handled via HttpOnly cookies (set by backend).
+ * Cookies are automatically sent with requests when withCredentials: true.
+ * No manual token injection needed.
  */
 apiClient.interceptors.request.use(
   (config) => {
-    // Check if we're in browser (not server-side rendering)
-    // typeof window !== 'undefined' means we're in the browser
-    if (typeof window !== 'undefined') {
-      // Get token from localStorage (if you're using localStorage instead of cookies)
-      const token = localStorage.getItem('token');
-      
-      // If token exists, add it to Authorization header
-      // Format: "Bearer <token>" (standard JWT format)
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    
-    // Return the modified config (with token added)
+    // Cookies are automatically included via withCredentials: true
+    // No need to manually add tokens - backend reads from cookies
     return config;
   },
   (error) => {
@@ -154,12 +142,9 @@ apiClient.interceptors.response.use(
     // If we shouldn't retry, handle the error normally
     // Handle 401 Unauthorized (token expired or invalid)
     if (error.response?.status === 401) {
-      // Clear token from localStorage if it exists
-      // This happens when token expires or is invalid
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-  }
-
+      // Note: HttpOnly cookies are cleared by the backend on logout
+      // No need to manually clear localStorage (we don't use it for auth)
+      
       // Optional: Automatically redirect to login page
       // Uncomment if you want automatic redirect:
       // window.location.href = '/login';
@@ -389,5 +374,13 @@ export const api = {
    */
   getCategoryBySlug: (slug: string) =>
     apiClient.get<Category>(`/api/categories/${slug}`).then((response) => response.data),
+  
+  /**
+   * Get user's recently viewed categories (LRU)
+   * Requires authentication
+   */
+  getRecentCategories: () =>
+    apiClient.get<{ categories: Array<Category & { lastViewedAt: string; viewCount: number }> }>('/api/user/recent-categories')
+      .then((response) => response.data.categories),
 };
 

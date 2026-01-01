@@ -11,7 +11,7 @@
  * 3. Create or find user in database
  * 4. Generate JWT token
  * 5. Set HttpOnly cookie
- * 6. Redirect to /home
+ * 6. Redirect to home page (/)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
 
     // Create response to redirect to home page
     const response = NextResponse.redirect(
-      new URL('/home', request.url)
+      new URL('/', request.url)
     );
 
     // Set HttpOnly cookie with JWT token (same as email/password login)

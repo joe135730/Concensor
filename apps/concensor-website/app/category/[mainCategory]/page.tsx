@@ -43,6 +43,39 @@ export default function MainCategoryPage() {
         const categoryData = await api.getCategoryBySlug(mainCategorySlug);
         setCategory(categoryData);
 
+        // Track category view (for LRU)
+        // Always update localStorage (for browser persistence, like Reddit)
+        // Also update backend when authenticated (for account-specific sync)
+        try {
+          // Always update localStorage (works for both logged-in and logged-out users)
+          const { addRecentCategory } = await import('@/lib/recentCategories');
+          addRecentCategory({
+            id: categoryData.id,
+            name: categoryData.name,
+            slug: categoryData.slug,
+            parentId: categoryData.parentId || null,
+            parentSlug: null, // Main category has no parent
+          });
+          // Event is already dispatched by addRecentCategory
+        } catch (err) {
+          // Ignore localStorage errors
+        }
+
+        // Also update backend if authenticated (for account-specific sync)
+        if (isAuthenticated) {
+          try {
+            await fetch(`/api/categories/${mainCategorySlug}/view`, {
+              method: 'POST',
+            });
+            // Dispatch event to notify sidebar to refresh (for immediate update)
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('categoryViewed'));
+            }
+          } catch (err) {
+            // Ignore backend tracking errors
+          }
+        }
+
         // Fetch posts for this main category
         const postsData = await api.getPosts({
           mainCategory: mainCategorySlug,
@@ -66,7 +99,7 @@ export default function MainCategoryPage() {
     if (mainCategorySlug) {
       fetchData();
     }
-  }, [mainCategorySlug]);
+  }, [mainCategorySlug, isAuthenticated]);
 
   // Use appropriate layout based on authentication status
   const Layout = isAuthenticated ? AuthLayout : MainLayout;

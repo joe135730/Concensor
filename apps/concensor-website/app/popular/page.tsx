@@ -4,12 +4,13 @@
  * Popular Posts Page
  * 
  * Route: /popular
- * Shows popular posts sorted by hot score.
- * Requires authentication.
+ * Shows popular posts sorted by hot score (using the popular algorithm).
+ * Accessible to both logged in and logged out users.
  */
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import MainLayout from '@/layouts/MainLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
@@ -27,48 +28,43 @@ export default function PopularPostsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Redirect unauthenticated users
+  // Fetch popular posts (accessible to all users)
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
-
-  // Fetch popular posts
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      const fetchPosts = async () => {
-        try {
-          setLoading(true);
-          setError('');
-          const data = await api.getPosts({
-            popular: true, // Popular posts sorted by hot score
-          });
-          
-          if (Array.isArray(data)) {
-            setPosts(data);
-          } else if (data.posts) {
-            setPosts(data.posts);
-          } else {
-            setPosts([]);
-          }
-        } catch (err: any) {
-          setError(err.message || 'Failed to load posts');
-        } finally {
-          setLoading(false);
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await api.getPosts({
+          popular: true, // Popular posts sorted by hot score
+        });
+        
+        if (Array.isArray(data)) {
+          setPosts(data);
+        } else if (data.posts) {
+          setPosts(data.posts);
+        } else {
+          setPosts([]);
         }
-      };
+      } catch (err: any) {
+        setError(err.message || 'Failed to load posts');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchPosts();
-    }
-  }, [authLoading, isAuthenticated]);
+    fetchPosts();
+  }, []);
 
-  if (authLoading || !isAuthenticated) {
+  // Use appropriate layout based on authentication status
+  const Layout = isAuthenticated ? AuthLayout : MainLayout;
+
+  // Show loading state while checking auth
+  if (authLoading) {
     return null;
   }
 
   return (
-    <AuthLayout>
+    <Layout>
       <div className="popular-posts-page">
         <div className="popular-posts-page-content">
           <Sidebar />
@@ -82,7 +78,7 @@ export default function PopularPostsPage() {
           </main>
         </div>
       </div>
-    </AuthLayout>
+    </Layout>
   );
 }
 

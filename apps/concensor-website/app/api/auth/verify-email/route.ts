@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
     // ✅ Create redirect response to home page
     // User is now verified and logged in
     const response = NextResponse.redirect(
-      new URL('/home?verified=true', request.url)
+      new URL('/?verified=true', request.url)
     );
 
     // ✅ Set HttpOnly cookie with JWT token

@@ -15,7 +15,7 @@ const Header = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Get sidebar context (available on pages with sidebar)
-  const pagesWithSidebar = ['/home', '/', '/all', '/popular', '/category'];
+  const pagesWithSidebar = ['/', '/all', '/popular', '/category'];
   const hasSidebar = pagesWithSidebar.some(route => pathname === route || pathname?.startsWith(route));
   let sidebarContext = null;
   if (hasSidebar) {
@@ -28,7 +28,7 @@ const Header = () => {
 
   // List of authenticated routes (routes that require login)
   // If we're on these routes, assume user is authenticated during loading
-  const authenticatedRoutes = ['/home', '/profile'];
+  const authenticatedRoutes = ['/profile'];
   const isAuthenticatedRoute = authenticatedRoutes.some(route => pathname?.startsWith(route));
 
   // Close dropdown when clicking outside
@@ -59,13 +59,12 @@ const Header = () => {
   // If on public route, show public layout
   if (loading) {
     // If we're on an authenticated route, show authenticated header layout
-    // This prevents the glitch when refreshing /home page
     if (isAuthenticatedRoute) {
       return (
         <header className="header">
           <div className="header-container">
             <div className="header-left">
-              <Link href="/home" className="header-logo">
+              <Link href="/" className="header-logo">
                 <img src={Logo} alt="Concensor" className="logo-image" />
               </Link>
             </div>
@@ -125,7 +124,7 @@ const Header = () => {
               </span>
             </button>
           )}
-          <Link href={isAuthenticated ? "/home" : "/"} className="header-logo">
+          <Link href="/" className="header-logo">
             <img src={Logo} alt="Concensor" className="logo-image" />
           </Link>
         </div>

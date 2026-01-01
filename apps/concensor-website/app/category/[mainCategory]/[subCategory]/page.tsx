@@ -57,6 +57,40 @@ export default function SubCategoryPage() {
           return;
         }
 
+        // Track category view (for LRU)
+        // Always update localStorage (for browser persistence, like Reddit)
+        // Also update backend when authenticated (for account-specific sync)
+        try {
+          // Always update localStorage (works for both logged-in and logged-out users)
+          const { addRecentCategory } = await import('@/lib/recentCategories');
+          addRecentCategory({
+            id: subCatData.id,
+            name: subCatData.name,
+            slug: subCatData.slug,
+            parentId: subCatData.parentId || null,
+            parentSlug: mainCatData.slug, // Store parent slug for routing
+          });
+          // Event is already dispatched by addRecentCategory
+        } catch (err) {
+          // Ignore localStorage errors
+        }
+
+        // Also update backend if authenticated (for account-specific sync)
+        // Note: Backend tracks main category, not sub category
+        if (isAuthenticated) {
+          try {
+            await fetch(`/api/categories/${subCategorySlug}/view`, {
+              method: 'POST',
+            });
+            // Dispatch event to notify sidebar to refresh (for immediate update)
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('categoryViewed'));
+            }
+          } catch (err) {
+            // Ignore backend tracking errors
+          }
+        }
+
         // Fetch posts for this sub category
         const postsData = await api.getPosts({
           subCategory: subCategorySlug,
@@ -80,7 +114,7 @@ export default function SubCategoryPage() {
     if (mainCategorySlug && subCategorySlug) {
       fetchData();
     }
-  }, [mainCategorySlug, subCategorySlug]);
+  }, [mainCategorySlug, subCategorySlug, isAuthenticated]);
 
   // Use appropriate layout based on authentication status
   const Layout = isAuthenticated ? AuthLayout : MainLayout;

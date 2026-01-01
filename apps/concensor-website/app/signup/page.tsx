@@ -18,7 +18,7 @@ export default function SignUpPage() {
     if (!loading && isAuthenticated) {
       // Use replace() to avoid adding signup page to history
       // This prevents glitch and makes redirect immediate
-      router.replace('/home');
+      router.replace('/');
     }
   }, [isAuthenticated, loading, router]);
 

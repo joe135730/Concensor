@@ -3,7 +3,7 @@
 .popular-posts-page {
   min-height: calc(100vh - 80px);
   background-color: #f5f5f5;
-  padding-top: 80px; /* Account for fixed header */
+  padding-top: 70px; /* Account for fixed header */
 }
 
 .popular-posts-page-content {

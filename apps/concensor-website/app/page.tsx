@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * Root Page (Entry Page)
+ * Root Page (Entry Page / Home)
  * 
  * Route: /
- * Shows popular posts by default.
+ * Shows personalized recommendations for users.
+ * For logged-out users, shows popular posts as fallback.
  * Accessible to both logged in and logged out users.
  */
 
@@ -28,14 +29,21 @@ export default function EntryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Fetch popular posts (accessible to all users)
+  // Fetch personalized recommendations
+  // TODO: Implement backend logic for personalized recommendations
+  // For now, show popular posts as fallback
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
         setError('');
+        
+        // TODO: Replace with personalized recommendations API
+        // const data = await api.getPersonalizedRecommendations();
+        
+        // For now, use popular posts as fallback
         const data = await api.getPosts({
-          popular: true, // Default to popular posts
+          popular: true,
         });
         
         if (Array.isArray(data)) {
@@ -53,7 +61,7 @@ export default function EntryPage() {
     };
 
     fetchPosts();
-  }, []);
+  }, [isAuthenticated]);
 
   // Use appropriate layout based on authentication status
   const Layout = isAuthenticated ? AuthLayout : MainLayout;
@@ -74,7 +82,7 @@ export default function EntryPage() {
               posts={posts} 
               loading={loading} 
               error={error}
-              title="Popular Posts"
+              title={isAuthenticated ? "Recommended for You" : "Popular Posts"}
             />
           </main>
         </div>

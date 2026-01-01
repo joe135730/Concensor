@@ -76,6 +76,30 @@
   text-align: center;
 }
 
+.sidebar-empty {
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0.75rem 1rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.85rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.sidebar-section-title {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem 1rem 0.5rem 1rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-link-recent {
+  padding-left: 1.5rem; /* Indent recent items */
+  font-size: 0.95rem;
+}
+
 /* Create Post Button in Sidebar (Oval/Pill Shape) */
 .sidebar-post-button {
   margin-top: 1rem;
