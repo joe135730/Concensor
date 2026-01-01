@@ -8,13 +8,46 @@ export interface User {
   // Add more user fields as needed
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  parentId?: string | null;
+}
+
 export interface Post {
   id: string;
   title: string;
   content: string;
   authorId: string;
+  author: {
+    id: string;
+    username: string | null;
+    profilePicture: string | null;
+  };
+  mainCategoryId: string;
+  mainCategory: Category;
+  subCategoryId: string;
+  subCategory: Category;
+  status: string;
+  // Vote counts
+  stronglyAgreeCount: number;
+  agreeCount: number;
+  neutralCount: number;
+  disagreeCount: number;
+  stronglyDisagreeCount: number;
+  weightedScore: number;
+  // Engagement counts
+  totalVotes: number;
+  commentCount: number;
+  viewCount: number;
+  // Popularity
+  hotScore: number;
   createdAt: string;
   updatedAt: string;
-  // Add more post fields as needed
+  _count?: {
+    votes: number;
+    comments: number;
+  };
 }
 

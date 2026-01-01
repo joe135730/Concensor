@@ -53,9 +53,8 @@ export default function HomePage() {
   }, [router, isMobile, setSidebarOpen]);
 
   const handleCreatePost = useCallback(() => {
-    // TODO: Navigate to create post page or open modal
-    console.log('Create post clicked');
-  }, []);
+    router.push('/create-post');
+  }, [router]);
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -165,19 +164,42 @@ export default function HomePage() {
           
           <div className="posts-list">
             {posts.map((post) => (
-              <article key={post.id} className="post-card">
+              <article
+                key={post.id}
+                className="post-card"
+                onClick={() => router.push(`/posts/${post.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <h2 className="post-title">{post.title}</h2>
                 <p className="post-content">{post.content}</p>
                 <div className="post-footer">
-                  <span className="comment-count">💬 100</span>
-                  <div className="vote-bar">
-                    <span className="agree-label">Agree</span>
-                    <div className="progress-bar">
-                      <div className="progress-agree" style={{ width: '50%' }}>50%</div>
-                      <div className="progress-disagree" style={{ width: '50%' }}>50%</div>
+                  <span className="comment-count">
+                    💬 {post._count?.comments || post.commentCount || 0}
+                  </span>
+                  {post.totalVotes > 0 && (
+                    <div className="vote-bar">
+                      <span className="agree-label">
+                        Agree {Math.round(((post.stronglyAgreeCount + post.agreeCount) / post.totalVotes) * 100)}%
+                      </span>
+                      <div className="progress-bar">
+                        <div
+                          className="progress-agree"
+                          style={{
+                            width: `${Math.round(((post.stronglyAgreeCount + post.agreeCount) / post.totalVotes) * 100)}%`,
+                          }}
+                        />
+                        <div
+                          className="progress-disagree"
+                          style={{
+                            width: `${Math.round(((post.stronglyDisagreeCount + post.disagreeCount) / post.totalVotes) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="disagree-label">
+                        Disagree {Math.round(((post.stronglyDisagreeCount + post.disagreeCount) / post.totalVotes) * 100)}%
+                      </span>
                     </div>
-                    <span className="disagree-label">Disagree</span>
-                  </div>
+                  )}
                 </div>
               </article>
             ))}

@@ -237,15 +237,24 @@ export const api = {
    */
   
   // GET /api/posts - Get all posts
-  getPosts: () =>
-    apiClient.get('/api/posts').then((response) => response.data),
+  getPosts: (params?: { category?: string; mainCategory?: string; subCategory?: string; popular?: boolean; page?: number; limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.mainCategory) queryParams.append('mainCategory', params.mainCategory);
+    if (params?.subCategory) queryParams.append('subCategory', params.subCategory);
+    if (params?.popular) queryParams.append('popular', 'true');
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    const query = queryParams.toString();
+    return apiClient.get(`/api/posts${query ? `?${query}` : ''}`).then((response) => response.data);
+  },
   
   // GET /api/posts/:id - Get single post by ID
   getPost: (id: string) =>
     apiClient.get(`/api/posts/${id}`).then((response) => response.data),
   
   // POST /api/posts - Create new post
-  createPost: (data: { title: string; content: string }) =>
+  createPost: (data: { title: string; content: string; mainCategoryId: string; subCategoryId: string }) =>
     apiClient.post('/api/posts', data).then((response) => response.data),
 
   // PUT /api/posts/:id - Update existing post
@@ -350,5 +359,19 @@ export const api = {
    */
   getIdeology: (userId: string) =>
     apiClient.get(`/api/user/${userId}/ideology`).then((response) => response.data),
+
+  /**
+   * Categories API
+   * 
+   * @param params - Query parameters (mainOnly, parentId, slug)
+   */
+  getCategories: (params?: { mainOnly?: boolean; parentId?: string; slug?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.mainOnly) queryParams.append('mainOnly', 'true');
+    if (params?.parentId) queryParams.append('parentId', params.parentId);
+    if (params?.slug) queryParams.append('slug', params.slug);
+    const query = queryParams.toString();
+    return apiClient.get(`/api/categories${query ? `?${query}` : ''}`).then((response) => response.data);
+  },
 };
 
