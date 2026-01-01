@@ -16,14 +16,27 @@ import { api } from '@/lib/api';
 import { Post } from '@/types';
 import './page.css';
 
+type VoteType = 'strongly_disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly_agree';
+
+interface Vote {
+  id: string;
+  voteType: VoteType;
+  voteValue: number;
+  createdAt: string;
+}
+
 export default function PostDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const { isAuthenticated, loading: authLoading, user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
+  const [userVote, setUserVote] = useState<Vote | null>(null);
   const [loading, setLoading] = useState(true);
+  const [voting, setVoting] = useState(false);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [showVotePreview, setShowVotePreview] = useState(false);
+  const [selectedVote, setSelectedVote] = useState<VoteType | null>(null);
 
   const postId = params?.id as string;
 
@@ -34,16 +47,23 @@ export default function PostDetailsPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  // Fetch post
+  // Fetch post and user's vote
   useEffect(() => {
     if (!postId || authLoading || !isAuthenticated) return;
 
-    const fetchPost = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError('');
-        const data = await api.getPost(postId);
-        setPost(data);
+        
+        // Fetch post and user's vote in parallel
+        const [postData, voteData] = await Promise.all([
+          api.getPost(postId),
+          api.getUserVote(postId).catch(() => ({ vote: null })), // If no vote, return null
+        ]);
+
+        setPost(postData);
+        setUserVote(voteData.vote || null);
       } catch (err: any) {
         setError(err.message || 'Failed to load post');
       } finally {
@@ -51,7 +71,7 @@ export default function PostDetailsPage() {
       }
     };
 
-    fetchPost();
+    fetchData();
   }, [postId, authLoading, isAuthenticated]);
 
   const handleDelete = async () => {
@@ -70,6 +90,37 @@ export default function PostDetailsPage() {
     }
   };
 
+  const handleVoteClick = (voteType: VoteType) => {
+    if (!post || isAuthor || userVote) return; // Can't vote if already voted or is author
+    
+    setSelectedVote(voteType);
+    setShowVotePreview(true);
+  };
+
+  const handleConfirmVote = async () => {
+    if (!post || !selectedVote || voting) return;
+
+    try {
+      setVoting(true);
+      const response = await api.vote(post.id, selectedVote);
+      
+      // Update post with new vote counts
+      setPost(response.post);
+      setUserVote(response.vote);
+      setShowVotePreview(false);
+      setSelectedVote(null);
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit vote');
+    } finally {
+      setVoting(false);
+    }
+  };
+
+  const handleCancelVote = () => {
+    setShowVotePreview(false);
+    setSelectedVote(null);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -83,6 +134,21 @@ export default function PostDetailsPage() {
     if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
     return date.toLocaleDateString();
+  };
+
+  const getVoteLabel = (voteType: VoteType): string => {
+    switch (voteType) {
+      case 'strongly_disagree':
+        return 'Strongly Disagree';
+      case 'disagree':
+        return 'Disagree';
+      case 'neutral':
+        return 'Neutral';
+      case 'agree':
+        return 'Agree';
+      case 'strongly_agree':
+        return 'Strongly Agree';
+    }
   };
 
   const calculateConsensus = () => {
@@ -100,6 +166,39 @@ export default function PostDetailsPage() {
       disagree: Math.round((disagree / total) * 100),
       neutral: Math.round((neutral / total) * 100),
     };
+  };
+
+  const getUserVotePosition = () => {
+    if (!userVote || !post) return null;
+
+    const total = post.totalVotes || 0;
+    if (total === 0) return null;
+
+    // Calculate grouped percentages (for display)
+    const agreePercent = consensus.agree; // Strongly Agree + Agree
+    const neutralPercent = consensus.neutral;
+    const disagreePercent = consensus.disagree; // Disagree + Strongly Disagree
+
+    // Calculate position based on grouped segments
+    let position = 0;
+    switch (userVote.voteType) {
+      case 'strongly_disagree':
+      case 'disagree':
+        // In the Disagree segment (right side)
+        position = agreePercent + neutralPercent + (disagreePercent / 2);
+        break;
+      case 'neutral':
+        // In the Neutral segment (middle)
+        position = agreePercent + (neutralPercent / 2);
+        break;
+      case 'agree':
+      case 'strongly_agree':
+        // In the Agree segment (left side)
+        position = agreePercent / 2;
+        break;
+    }
+
+    return Math.max(0, Math.min(100, position)); // Clamp between 0 and 100
   };
 
   if (authLoading || !isAuthenticated) {
@@ -131,6 +230,10 @@ export default function PostDetailsPage() {
 
   const consensus = calculateConsensus();
   const isAuthor = user?.id === post.authorId;
+  const hasVoted = !!userVote;
+  const canVote = !isAuthor && !hasVoted;
+  const canComment = hasVoted; // Must vote to comment
+  const userVotePosition = getUserVotePosition();
 
   return (
     <AuthLayout>
@@ -222,52 +325,269 @@ export default function PostDetailsPage() {
               </div>
             </div>
 
-            {/* Consensus Bar */}
-            {post.totalVotes > 0 && (
-              <div className="consensus-section">
-                <h3 className="consensus-title">Community Consensus</h3>
-                <div className="vote-bar">
-                  <span className="agree-label">Agree {consensus.agree}%</span>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-agree"
-                      style={{ width: `${consensus.agree}%` }}
-                    >
-                      {consensus.agree > 10 && `${consensus.agree}%`}
-                    </div>
-                    <div
-                      className="progress-neutral"
-                      style={{ width: `${consensus.neutral}%` }}
-                    >
-                      {consensus.neutral > 10 && `${consensus.neutral}%`}
-                    </div>
-                    <div
-                      className="progress-disagree"
-                      style={{ width: `${consensus.disagree}%` }}
-                    >
-                      {consensus.disagree > 10 && `${consensus.disagree}%`}
+            {/* Voting Section */}
+            <div className="voting-section">
+              {isAuthor ? (
+                // Post owner view - show results if votes exist
+                post.totalVotes > 0 ? (
+                  <div className="voting-results">
+                    <h3 className="voting-results-title">Community Consensus</h3>
+                    <p className="voting-owner-note">You cannot vote on your own post, but you can see the results.</p>
+                    
+                    {/* Consensus Bar */}
+                    <div className="vote-bar-detailed">
+                      <span className="vote-label-left">Strongly Agree</span>
+                      <div className="progress-bar-detailed">
+                        {/* Agree (Strongly Agree + Agree) */}
+                        <div
+                          className="progress-agree-grouped"
+                          style={{ width: `${consensus.agree}%` }}
+                        >
+                          {consensus.agree > 5 && (
+                            <span className="progress-percentage">
+                              {consensus.agree}%
+                            </span>
+                          )}
+                        </div>
+                        {/* Neutral */}
+                        <div
+                          className="progress-neutral"
+                          style={{ width: `${consensus.neutral}%` }}
+                        >
+                          {consensus.neutral > 5 && (
+                            <span className="progress-percentage">
+                              {consensus.neutral}%
+                            </span>
+                          )}
+                        </div>
+                        {/* Disagree (Disagree + Strongly Disagree) */}
+                        <div
+                          className="progress-disagree-grouped"
+                          style={{ width: `${consensus.disagree}%` }}
+                        >
+                          {consensus.disagree > 5 && (
+                            <span className="progress-percentage">
+                              {consensus.disagree}%
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="vote-label-right">Strongly Disagree</span>
                     </div>
                   </div>
-                  <span className="disagree-label">Disagree {consensus.disagree}%</span>
+                ) : (
+                  // No votes yet - show empty bar
+                  <div className="voting-results">
+                    <h3 className="voting-results-title">Community Consensus</h3>
+                    <p className="voting-owner-note">You cannot vote on your own post. Waiting for votes...</p>
+                    
+                    <div className="vote-bar-detailed">
+                      <span className="vote-label-left">Strongly Agree</span>
+                      <div className="progress-bar-empty">
+                        <span className="no-votes-text">No votes yet</span>
+                      </div>
+                      <span className="vote-label-right">Strongly Disagree</span>
+                    </div>
+                  </div>
+                )
+              ) : hasVoted ? (
+                // Show results after voting
+                <div className="voting-results">
+                  <h3 className="voting-results-title">Community Consensus</h3>
+                  
+                  {/* User's Vote Indicator */}
+                  <div className="user-vote-indicator">
+                    <div className="user-vote-arrow" style={{ left: `${userVotePosition}%` }}>
+                      <div className="arrow-down"></div>
+                      <div className="user-vote-label">
+                        Your answer ({getVoteLabel(userVote.voteType)})
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Consensus Bar - Grouped into 3 segments (Agree, Neutral, Disagree) */}
+                  <div className="vote-bar-detailed">
+                    <span className="vote-label-left">Strongly Agree</span>
+                    <div className="progress-bar-detailed">
+                      {/* Agree (Strongly Agree + Agree) */}
+                      <div
+                        className="progress-agree-grouped"
+                        style={{ width: `${consensus.agree}%` }}
+                      >
+                        {consensus.agree > 5 && (
+                          <span className="progress-percentage">
+                            {consensus.agree}%
+                          </span>
+                        )}
+                      </div>
+                      {/* Neutral */}
+                      <div
+                        className="progress-neutral"
+                        style={{ width: `${consensus.neutral}%` }}
+                      >
+                        {consensus.neutral > 5 && (
+                          <span className="progress-percentage">
+                            {consensus.neutral}%
+                          </span>
+                        )}
+                      </div>
+                      {/* Disagree (Disagree + Strongly Disagree) */}
+                      <div
+                        className="progress-disagree-grouped"
+                        style={{ width: `${consensus.disagree}%` }}
+                      >
+                        {consensus.disagree > 5 && (
+                          <span className="progress-percentage">
+                            {consensus.disagree}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span className="vote-label-right">Strongly Disagree</span>
+                  </div>
+                </div>
+              ) : (
+                // Show voting interface before voting - NO result bar shown until user votes
+                <div className="voting-interface">
+                  <h3 className="voting-title">What's your opinion?</h3>
+                  <p className="voting-subtitle">Vote to see results and join the discussion</p>
+                  
+                  <div className="vote-slider">
+                    <button
+                      className={`vote-option ${selectedVote === 'strongly_agree' ? 'selected' : ''}`}
+                      onClick={() => handleVoteClick('strongly_agree')}
+                      disabled={voting}
+                    >
+                      <div className="vote-circle"></div>
+                      <span className="vote-label">Strongly Agree</span>
+                    </button>
+                    <button
+                      className={`vote-option ${selectedVote === 'agree' ? 'selected' : ''}`}
+                      onClick={() => handleVoteClick('agree')}
+                      disabled={voting}
+                    >
+                      <div className="vote-circle"></div>
+                      <span className="vote-label">Agree</span>
+                    </button>
+                    <button
+                      className={`vote-option ${selectedVote === 'neutral' ? 'selected' : ''}`}
+                      onClick={() => handleVoteClick('neutral')}
+                      disabled={voting}
+                    >
+                      <div className="vote-circle"></div>
+                      <span className="vote-label">Neutral</span>
+                    </button>
+                    <button
+                      className={`vote-option ${selectedVote === 'disagree' ? 'selected' : ''}`}
+                      onClick={() => handleVoteClick('disagree')}
+                      disabled={voting}
+                    >
+                      <div className="vote-circle"></div>
+                      <span className="vote-label">Disagree</span>
+                    </button>
+                    <button
+                      className={`vote-option ${selectedVote === 'strongly_disagree' ? 'selected' : ''}`}
+                      onClick={() => handleVoteClick('strongly_disagree')}
+                      disabled={voting}
+                    >
+                      <div className="vote-circle"></div>
+                      <span className="vote-label">Strongly Disagree</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Vote Preview Modal */}
+            {showVotePreview && selectedVote && (
+              <div className="vote-preview-modal-overlay" onClick={handleCancelVote}>
+                <div className="vote-preview-modal" onClick={(e) => e.stopPropagation()}>
+                  <h3 className="vote-preview-title">Confirm Your Vote</h3>
+                  <p className="vote-preview-message">
+                    You are about to vote: <strong>{getVoteLabel(selectedVote)}</strong>
+                  </p>
+                  <p className="vote-preview-note">
+                    This vote is final and cannot be changed. Make sure this reflects your true opinion.
+                  </p>
+                  <div className="vote-preview-actions">
+                    <button
+                      className="vote-preview-cancel"
+                      onClick={handleCancelVote}
+                      disabled={voting}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="vote-preview-confirm"
+                      onClick={handleConfirmVote}
+                      disabled={voting}
+                    >
+                      {voting ? 'Submitting...' : 'Confirm Vote'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Voting Interface - TODO: Implement in Phase 4 */}
-            <div className="voting-section">
-              <p className="voting-placeholder">
-                Voting interface will be implemented in Phase 4
-              </p>
-            </div>
-
-            {/* Comments Section - TODO: Implement in Phase 9 */}
+            {/* Comments Section */}
             <div className="comments-section">
               <h3 className="comments-title">
                 Comments ({post._count?.comments || post.commentCount || 0})
               </h3>
-              <p className="comments-placeholder">
-                Comments will be implemented in Phase 9
-              </p>
+              
+              {/* Comment Input - Show always, but disable if user hasn't voted */}
+              {!isAuthor && (
+                <div className="comment-input-section">
+                  <div className="comment-input-container">
+                    <div className="comment-author-avatar">
+                      {user?.profilePicture ? (
+                        <img
+                          src={user.profilePicture}
+                          alt={user.username || 'You'}
+                          className="comment-avatar-image"
+                        />
+                      ) : (
+                        <span className="comment-avatar-initial">
+                          {user?.username?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      className="comment-input"
+                      placeholder={canComment ? "Share your thoughts...." : "Vote to join the discussion"}
+                      disabled={!canComment}
+                    />
+                    <button 
+                      className="comment-send-button" 
+                      disabled={!canComment}
+                      title={!canComment ? "Please vote first to comment" : ""}
+                    >
+                      Send
+                    </button>
+                  </div>
+                  {!canComment && (
+                    <p className="comment-hint">
+                      Please vote to join the discussion
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Comments List - Show always (users can see comments before voting) */}
+              <div className="comments-list">
+                {hasVoted || isAuthor ? (
+                  // Show comments if user has voted or is author
+                  <p className="comments-placeholder">
+                    Comments will be implemented in Phase 9
+                  </p>
+                ) : (
+                  // Show message if user hasn't voted yet
+                  <p className="comments-placeholder">
+                    Vote to see comments and join the discussion
+                  </p>
+                )}
+              </div>
             </div>
           </article>
         </div>
@@ -275,4 +595,3 @@ export default function PostDetailsPage() {
     </AuthLayout>
   );
 }
-

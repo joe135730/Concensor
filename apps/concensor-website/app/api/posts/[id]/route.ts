@@ -42,6 +42,15 @@ export async function GET(
   try {
     const { id } = params;
 
+    // Try to get authenticated user (optional - for vote check)
+    let userId: string | null = null;
+    try {
+      const user = await getAuthenticatedUser(request);
+      userId = user?.id || null;
+    } catch {
+      // Not authenticated, continue without user vote
+    }
+
     const post = await db.post.findUnique({
       where: { id },
       include: {

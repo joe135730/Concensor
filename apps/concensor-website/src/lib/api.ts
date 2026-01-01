@@ -266,13 +266,21 @@ export const api = {
     apiClient.delete(`/api/posts/${id}`).then((response) => response.data),
 
   /**
-   * Votes API (for ideology scoring)
+   * Votes API
    * 
    * @param postId - ID of the post to vote on
-   * @param vote - Vote value (strongly_disagree, disagree, neutral, agree, strongly_agree)
+   * @param voteType - Vote type (strongly_disagree, disagree, neutral, agree, strongly_agree)
    */
-  vote: (postId: string, vote: 'strongly_disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly_agree') =>
-    apiClient.post(`/api/posts/${postId}/vote`, { vote }).then((response) => response.data),
+  vote: (postId: string, voteType: 'strongly_disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly_agree') =>
+    apiClient.post(`/api/posts/${postId}/vote`, { voteType }).then((response) => response.data),
+  
+  /**
+   * Get user's vote on a post
+   * 
+   * @param postId - ID of the post
+   */
+  getUserVote: (postId: string) =>
+    apiClient.get(`/api/posts/${postId}/vote`).then((response) => response.data),
 
   /**
    * User/Profile API calls
