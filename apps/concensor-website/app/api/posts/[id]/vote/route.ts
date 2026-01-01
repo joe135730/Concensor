@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { recalculateHotScore } from '@/lib/hotScore';
 
 /**
  * Helper function to get authenticated user from request
@@ -134,6 +135,20 @@ export async function POST(
         },
       });
 
+      // Get current post to calculate new hot score
+      const currentPost = await tx.post.findUnique({
+        where: { id: postId },
+        select: {
+          totalVotes: true,
+          commentCount: true,
+          createdAt: true,
+        },
+      });
+
+      if (!currentPost) {
+        throw new Error('Post not found');
+      }
+
       // Update post vote counts based on vote type
       const updateData: any = {
         totalVotes: { increment: 1 },
@@ -157,6 +172,15 @@ export async function POST(
           updateData.stronglyAgreeCount = { increment: 1 };
           break;
       }
+
+      // Recalculate hot score with new vote count
+      const newTotalVotes = currentPost.totalVotes + 1;
+      const newHotScore = recalculateHotScore({
+        totalVotes: newTotalVotes,
+        commentCount: currentPost.commentCount,
+        createdAt: currentPost.createdAt,
+      });
+      updateData.hotScore = newHotScore;
 
       // Update post
       const updatedPost = await tx.post.update({

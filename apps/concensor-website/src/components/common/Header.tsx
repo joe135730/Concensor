@@ -14,10 +14,11 @@ const Header = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
-  // Get sidebar context (only available on /home page)
-  const isHomePage = pathname === '/home';
+  // Get sidebar context (available on pages with sidebar)
+  const pagesWithSidebar = ['/home', '/', '/all', '/popular', '/category'];
+  const hasSidebar = pagesWithSidebar.some(route => pathname === route || pathname?.startsWith(route));
   let sidebarContext = null;
-  if (isHomePage) {
+  if (hasSidebar) {
     try {
       sidebarContext = useSidebar();
     } catch (e) {
@@ -109,8 +110,8 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <div className="header-left">
-          {/* Hamburger Menu - Only show on /home page */}
-          {isHomePage && sidebarContext && (
+          {/* Hamburger Menu - Show on pages with sidebar */}
+          {hasSidebar && sidebarContext && (
             <button
               className="header-hamburger-button"
               onClick={sidebarContext.toggleSidebar}

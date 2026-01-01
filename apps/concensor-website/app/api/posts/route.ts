@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { calculateHotScore, recalculateHotScore } from '@/lib/hotScore';
 
 /**
  * Helper function to get authenticated user from request
@@ -99,14 +100,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Build orderBy
-    const orderBy = popular
-      ? { hotScore: 'desc' as const }
-      : { createdAt: 'desc' as const };
+    // If sorting by popular, we need to recalculate hot scores for accurate ranking
+    // Hot scores decay over time, so we recalculate them on-the-fly for popular queries
+    let posts;
+    let total;
 
-    // Fetch posts
-    const [posts, total] = await Promise.all([
-      db.post.findMany({
+    if (popular) {
+      // For popular posts, fetch all matching posts first, then recalculate and sort
+      const allPosts = await db.post.findMany({
         where,
         include: {
           author: {
@@ -137,12 +138,73 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-        orderBy,
-        skip,
-        take: limit,
-      }),
-      db.post.count({ where }),
-    ]);
+      });
+
+      // Recalculate hot scores for all posts (since they decay over time)
+      const postsWithRecalculatedScores = allPosts.map((post) => {
+        const recalculatedHotScore = recalculateHotScore({
+          totalVotes: post.totalVotes,
+          commentCount: post.commentCount,
+          createdAt: post.createdAt,
+        });
+        return {
+          ...post,
+          hotScore: recalculatedHotScore,
+        };
+      });
+
+      // Sort by recalculated hot score (descending)
+      postsWithRecalculatedScores.sort((a, b) => b.hotScore - a.hotScore);
+
+      // Apply pagination
+      total = postsWithRecalculatedScores.length;
+      posts = postsWithRecalculatedScores.slice(skip, skip + limit);
+    } else {
+      // For non-popular queries, use database sorting
+      const orderBy = { createdAt: 'desc' as const };
+
+      const [fetchedPosts, fetchedTotal] = await Promise.all([
+        db.post.findMany({
+          where,
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                profilePicture: true,
+              },
+            },
+            mainCategory: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            subCategory: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            _count: {
+              select: {
+                votes: true,
+                comments: true,
+              },
+            },
+          },
+          orderBy,
+          skip,
+          take: limit,
+        }),
+        db.post.count({ where }),
+      ]);
+
+      posts = fetchedPosts;
+      total = fetchedTotal;
+    }
 
     return NextResponse.json({
       posts,
@@ -226,6 +288,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate initial hot score (new post has 0 votes and 0 comments)
+    const initialHotScore = calculateHotScore(0, 0, new Date());
+
     // Create post
     const post = await db.post.create({
       data: {
@@ -235,6 +300,7 @@ export async function POST(request: NextRequest) {
         mainCategoryId,
         subCategoryId,
         status: 'published',
+        hotScore: initialHotScore,
       },
       include: {
         author: {

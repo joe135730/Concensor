@@ -69,7 +69,12 @@ export default function HomePage() {
       const fetchPosts = async () => {
         try {
           setLoading(true);
-          const data = await api.getPosts();
+          // Check if "Popular" category is selected
+          const isPopular = currentCategory?.id === 'popular';
+          const data = await api.getPosts({
+            popular: isPopular,
+            category: currentCategorySlug || undefined,
+          });
           // API returns { posts: [], total: 0, page: 1 } or array directly
           if (Array.isArray(data)) {
             setPosts(data);
@@ -87,7 +92,7 @@ export default function HomePage() {
 
       fetchPosts();
     }
-  }, [authLoading, isAuthenticated, currentCategorySlug]);
+  }, [authLoading, isAuthenticated, currentCategorySlug, currentCategory]);
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {

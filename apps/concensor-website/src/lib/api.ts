@@ -381,5 +381,13 @@ export const api = {
     const query = queryParams.toString();
     return apiClient.get(`/api/categories${query ? `?${query}` : ''}`).then((response) => response.data);
   },
+  
+  /**
+   * Get category by slug
+   * 
+   * @param slug - Category slug
+   */
+  getCategoryBySlug: (slug: string) =>
+    apiClient.get<Category>(`/api/categories/${slug}`).then((response) => response.data),
 };
 

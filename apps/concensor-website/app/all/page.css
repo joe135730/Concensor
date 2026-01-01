@@ -1,19 +1,19 @@
-/* Entry Page Styles */
+/* All Posts Page Styles */
 
-.entry-page {
+.all-posts-page {
   min-height: calc(100vh - 80px);
   background-color: #f5f5f5;
   padding-top: 80px; /* Account for fixed header */
 }
 
-.entry-page-content {
+.all-posts-page-content {
   display: flex;
   flex: 1;
   background-color: #f5f5f5;
   position: relative;
 }
 
-.entry-main {
+.all-posts-main {
   flex: 1;
   padding: 2rem;
   background-color: #f5f5f5;
@@ -21,31 +21,23 @@
   min-width: 0; /* Allow flex shrinking */
 }
 
-/* Desktop: Entry main shifts when sidebar opens/closes */
+/* Desktop: All posts main shifts when sidebar opens/closes */
 @media screen and (min-width: 1024px) {
-  .entry-main {
+  .all-posts-main {
     margin-left: 0; /* Default: align to screen left when sidebar closed */
   }
 
-  .entry-main.sidebar-open {
+  .all-posts-main.sidebar-open {
     margin-left: 0; /* When sidebar open, it's in flex flow, so no margin needed */
   }
 }
 
-/* Mobile: Entry main doesn't move, always align to screen left */
+/* Mobile: All posts main doesn't move, always align to screen left */
 @media screen and (max-width: 1023px) {
-  .entry-main {
+  .all-posts-main {
     width: 100%;
     margin-left: 0; /* Always align to screen left on mobile */
     padding-top: 2rem;
   }
-}
-
-/* Legacy home-page styles (kept for compatibility) */
-.home-page {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 

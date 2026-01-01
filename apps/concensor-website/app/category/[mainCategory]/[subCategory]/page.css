@@ -1,19 +1,19 @@
-/* Entry Page Styles */
+/* Sub Category Page Styles */
 
-.entry-page {
+.sub-category-page {
   min-height: calc(100vh - 80px);
   background-color: #f5f5f5;
   padding-top: 80px; /* Account for fixed header */
 }
 
-.entry-page-content {
+.sub-category-page-content {
   display: flex;
   flex: 1;
   background-color: #f5f5f5;
   position: relative;
 }
 
-.entry-main {
+.sub-category-main {
   flex: 1;
   padding: 2rem;
   background-color: #f5f5f5;
@@ -21,31 +21,31 @@
   min-width: 0; /* Allow flex shrinking */
 }
 
-/* Desktop: Entry main shifts when sidebar opens/closes */
+/* Desktop: Sub category main shifts when sidebar opens/closes */
 @media screen and (min-width: 1024px) {
-  .entry-main {
+  .sub-category-main {
     margin-left: 0; /* Default: align to screen left when sidebar closed */
   }
 
-  .entry-main.sidebar-open {
+  .sub-category-main.sidebar-open {
     margin-left: 0; /* When sidebar open, it's in flex flow, so no margin needed */
   }
 }
 
-/* Mobile: Entry main doesn't move, always align to screen left */
+/* Mobile: Sub category main doesn't move, always align to screen left */
 @media screen and (max-width: 1023px) {
-  .entry-main {
+  .sub-category-main {
     width: 100%;
     margin-left: 0; /* Always align to screen left on mobile */
     padding-top: 2rem;
   }
 }
 
-/* Legacy home-page styles (kept for compatibility) */
-.home-page {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.category-error {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.125rem;
+  color: #d32f2f;
 }
 
