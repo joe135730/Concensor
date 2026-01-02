@@ -36,7 +36,7 @@ interface RecentCategory extends Category {
 export default function Sidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { sidebarOpen, setSidebarOpen, isMobile } = useSidebar();
+  const { sidebarOpen, setSidebarOpen, isMobile, isResizing } = useSidebar();
   const { isAuthenticated, user } = useAuth();
   const [recentCategories, setRecentCategories] = useState<RecentCategory[]>([]);
   const [localRecentCategories, setLocalRecentCategories] = useState<LocalRecentCategory[]>([]);
@@ -215,7 +215,7 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''} ${isResizing ? 'resizing' : ''}`}>
         <nav className="sidebar-nav">
           {/* Section 1: Main Navigation */}
           <button

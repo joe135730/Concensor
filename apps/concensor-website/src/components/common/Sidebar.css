@@ -29,6 +29,11 @@
   transition: all 0.3s ease;
 }
 
+/* Disable transitions during resize to prevent flash */
+.sidebar.resizing {
+  transition: none !important;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;

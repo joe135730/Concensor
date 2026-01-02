@@ -7,6 +7,7 @@ interface SidebarContextType {
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   isMobile: boolean;
+  isResizing: boolean;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -15,6 +16,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [userManuallyClosed, setUserManuallyClosed] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   
   // Use refs to track state without causing re-renders
   const sidebarOpenRef = useRef(false);
@@ -36,7 +38,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }
   }, []); // Only run on mount
 
-  // Handle resize separately
+  // Handle resize - immediate updates when open, prevent flash when closed
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
@@ -44,6 +46,13 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       const wasMobile = isMobileRef.current;
       const currentOpen = sidebarOpenRef.current;
       
+      // If sidebar is closed, disable transitions to prevent flash
+      // If sidebar is open, allow natural transitions
+      if (!currentOpen) {
+        setIsResizing(true);
+      }
+      
+      // Update state immediately (no debounce for responsive behavior)
       isMobileRef.current = mobile;
       setIsMobile(mobile);
 
@@ -66,10 +75,23 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
         setSidebarOpen(false);
         sidebarOpenRef.current = false;
       }
+      
+      // Clear resizing flag after a brief moment (allows state to settle)
+      // Only needed when sidebar was closed (to prevent flash)
+      if (!currentOpen) {
+        // Use requestAnimationFrame to clear after render
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsResizing(false);
+          });
+        });
+      }
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, [userManuallyClosed]);
 
   // Update refs when state changes
@@ -96,7 +118,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SidebarContext.Provider value={{ sidebarOpen, setSidebarOpen, toggleSidebar, isMobile }}>
+    <SidebarContext.Provider value={{ sidebarOpen, setSidebarOpen, toggleSidebar, isMobile, isResizing }}>
       {children}
     </SidebarContext.Provider>
   );
