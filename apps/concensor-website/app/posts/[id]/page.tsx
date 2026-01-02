@@ -11,7 +11,10 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import AuthLayout from '@/layouts/AuthLayout';
+import MainLayout from '@/layouts/MainLayout';
+import Sidebar from '@/components/common/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
 import './page.css';
@@ -29,6 +32,7 @@ export default function PostDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const { isAuthenticated, loading: authLoading, user } = useAuth();
+  const { sidebarOpen } = useSidebar(); // Must be called before any conditional returns
   const [post, setPost] = useState<Post | null>(null);
   const [userVote, setUserVote] = useState<Vote | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,30 +44,31 @@ export default function PostDetailsPage() {
 
   const postId = params?.id as string;
 
-  // Redirect unauthenticated users
+  // Fetch post (allow non-authenticated users to view)
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, authLoading, router]);
-
-  // Fetch post and user's vote
-  useEffect(() => {
-    if (!postId || authLoading || !isAuthenticated) return;
+    if (!postId || authLoading) return;
 
     const fetchData = async () => {
       try {
         setLoading(true);
         setError('');
         
-        // Fetch post and user's vote in parallel
-        const [postData, voteData] = await Promise.all([
-          api.getPost(postId),
-          api.getUserVote(postId).catch(() => ({ vote: null })), // If no vote, return null
-        ]);
-
+        // Fetch post
+        const postData = await api.getPost(postId);
         setPost(postData);
-        setUserVote(voteData.vote || null);
+        
+        // Only fetch user's vote if authenticated
+        if (isAuthenticated) {
+          try {
+            const voteData = await api.getUserVote(postId);
+            setUserVote(voteData.vote || null);
+          } catch (err) {
+            // If no vote or error, set to null
+            setUserVote(null);
+          }
+        } else {
+          setUserVote(null);
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load post');
       } finally {
@@ -201,44 +206,50 @@ export default function PostDetailsPage() {
     return Math.max(0, Math.min(100, position)); // Clamp between 0 and 100
   };
 
-  if (authLoading || !isAuthenticated) {
-    return null;
+  if (authLoading) {
+    return (
+      <div className="post-details-page">
+        <div className="loading">Loading...</div>
+      </div>
+    );
   }
 
   if (loading) {
     return (
-      <AuthLayout>
-        <div className="post-details-page">
-          <div className="loading">Loading post...</div>
-        </div>
-      </AuthLayout>
+      <div className="post-details-page">
+        <div className="loading">Loading post...</div>
+      </div>
     );
   }
 
   if (error || !post) {
     return (
-      <AuthLayout>
-        <div className="post-details-page">
-          <div className="error">{error || 'Post not found'}</div>
-          <Link href="/" className="back-link">
-            ← Back to Posts
-          </Link>
-        </div>
-      </AuthLayout>
+      <div className="post-details-page">
+        <div className="error">{error || 'Post not found'}</div>
+        <Link href="/" className="back-link">
+          ← Back to Posts
+        </Link>
+      </div>
     );
   }
 
   const consensus = calculateConsensus();
-  const isAuthor = user?.id === post.authorId;
+  const isAuthor = isAuthenticated && user?.id === post.authorId;
   const hasVoted = !!userVote;
-  const canVote = !isAuthor && !hasVoted;
-  const canComment = hasVoted; // Must vote to comment
+  const canVote = isAuthenticated && !isAuthor && !hasVoted;
+  const canComment = isAuthenticated && hasVoted; // Must be authenticated and vote to comment
   const userVotePosition = getUserVotePosition();
 
+  // Use MainLayout for non-authenticated, AuthLayout for authenticated
+  const Layout = isAuthenticated ? AuthLayout : MainLayout;
+
   return (
-    <AuthLayout>
+    <Layout>
       <div className="post-details-page">
-        <div className="post-details-container">
+        <div className="post-details-page-content">
+          <Sidebar />
+          <main className={`post-details-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <div className="post-details-container">
           {/* Back Link */}
           <Link href="/" className="back-link">
             ← Back to Posts
@@ -327,7 +338,24 @@ export default function PostDetailsPage() {
 
             {/* Voting Section */}
             <div className="voting-section">
-              {isAuthor ? (
+              {!isAuthenticated ? (
+                // Non-authenticated user view
+                <div className="voting-login-prompt">
+                  <h3 className="voting-title">What's your opinion?</h3>
+                  <p className="voting-subtitle">Please login to vote and see community consensus</p>
+                  <div className="login-prompt-card">
+                    <p className="login-prompt-text">
+                      Join the discussion by logging in. Once you vote, you'll be able to see the community consensus and participate in comments.
+                    </p>
+                    <button
+                      className="login-prompt-button"
+                      onClick={() => router.push('/login')}
+                    >
+                      Login to Vote & Comment
+                    </button>
+                  </div>
+                </div>
+              ) : isAuthor ? (
                 // Post owner view - show results if votes exist
                 post.totalVotes > 0 ? (
                   <div className="voting-results">
@@ -535,8 +563,35 @@ export default function PostDetailsPage() {
                 Comments ({post._count?.comments || post.commentCount || 0})
               </h3>
               
-              {/* Comment Input - Show always, but disable if user hasn't voted */}
-              {!isAuthor && (
+              {/* Comment Input */}
+              {!isAuthenticated ? (
+                // Non-authenticated user - show login prompt to comment
+                <div className="comment-input-section">
+                  <div className="comment-input-container">
+                    <div className="comment-author-avatar">
+                      <span className="comment-avatar-initial">?</span>
+                    </div>
+                    <input
+                      type="text"
+                      className="comment-input"
+                      placeholder="Login to join the discussion"
+                      disabled={true}
+                    />
+                    <button 
+                      className="comment-send-button" 
+                      disabled={true}
+                      onClick={() => router.push('/login')}
+                      title="Please login to comment"
+                    >
+                      Login
+                    </button>
+                  </div>
+                  <p className="comment-hint">
+                    Please login to comment on this post
+                  </p>
+                </div>
+              ) : !isAuthor && (
+                // Authenticated user (not author) - show comment input
                 <div className="comment-input-section">
                   <div className="comment-input-container">
                     <div className="comment-author-avatar">
@@ -574,15 +629,18 @@ export default function PostDetailsPage() {
                 </div>
               )}
 
-              {/* Comments List - Show always (users can see comments before voting) */}
+              {/* Comments List - Show comments for all users (authenticated and non-authenticated) */}
               <div className="comments-list">
-                {hasVoted || isAuthor ? (
-                  // Show comments if user has voted or is author
+                {hasVoted || isAuthor || !isAuthenticated ? (
+                  // Show comments if:
+                  // - User has voted (authenticated)
+                  // - User is author (authenticated)
+                  // - User is not authenticated (can view but not comment)
                   <p className="comments-placeholder">
                     Comments will be implemented in Phase 9
                   </p>
                 ) : (
-                  // Show message if user hasn't voted yet
+                  // Authenticated user who hasn't voted yet
                   <p className="comments-placeholder">
                     Vote to see comments and join the discussion
                   </p>
@@ -590,8 +648,10 @@ export default function PostDetailsPage() {
               </div>
             </div>
           </article>
+            </div>
+          </main>
         </div>
       </div>
-    </AuthLayout>
+    </Layout>
   );
 }

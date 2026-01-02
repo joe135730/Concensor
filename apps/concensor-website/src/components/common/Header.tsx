@@ -15,7 +15,7 @@ const Header = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Get sidebar context (available on pages with sidebar)
-  const pagesWithSidebar = ['/', '/all', '/popular', '/category'];
+  const pagesWithSidebar = ['/', '/all', '/popular', '/category', '/posts'];
   const hasSidebar = pagesWithSidebar.some(route => pathname === route || pathname?.startsWith(route));
   let sidebarContext = null;
   if (hasSidebar) {
