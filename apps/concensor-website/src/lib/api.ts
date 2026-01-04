@@ -13,6 +13,7 @@
  */
 
 import axios, { AxiosError, AxiosInstance } from 'axios';
+import { Category } from '@/types';
 
 // Base URL for API requests
 // For Next.js API routes (same origin), use empty string (relative paths)
@@ -284,8 +285,21 @@ export const api = {
     apiClient.get('/api/user/points').then((response) => response.data),
 
   // POST /api/user/badges/equip - Equip a badge
-  equipBadge: (categoryId: string) =>
-    apiClient.post('/api/user/badges/equip', { categoryId }).then((response) => response.data),
+  equipBadge: (categoryId: string | null) =>
+    apiClient.post<{ success: boolean; equippedBadgeCategoryId: string | null }>('/api/user/badges/equip', { categoryId })
+      .then((response) => response.data),
+
+  /**
+   * Comments API
+   */
+  
+  // GET /api/posts/[id]/comments - Get all comments for a post
+  getComments: (postId: string) =>
+    apiClient.get(`/api/posts/${postId}/comments`).then((response) => response.data),
+
+  // POST /api/posts/[id]/comments - Create a new comment
+  createComment: (postId: string, data: { content: string; parentId?: string }) =>
+    apiClient.post(`/api/posts/${postId}/comments`, data).then((response) => response.data),
 
   /**
    * Logout API call

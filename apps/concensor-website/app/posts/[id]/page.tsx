@@ -13,6 +13,7 @@ import Link from 'next/link';
 import AuthLayout from '@/layouts/AuthLayout';
 import MainLayout from '@/layouts/MainLayout';
 import Sidebar from '@/components/common/Sidebar';
+import CommentSection from '@/components/comments/CommentSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { api } from '@/lib/api';
@@ -237,7 +238,7 @@ export default function PostDetailsPage() {
   const isAuthor = isAuthenticated && user?.id === post.authorId;
   const hasVoted = !!userVote;
   const canVote = isAuthenticated && !isAuthor && !hasVoted;
-  const canComment = isAuthenticated && hasVoted; // Must be authenticated and vote to comment
+  const canComment = isAuthenticated && (hasVoted || isAuthor); // Must be authenticated and (vote OR be author) to comment
   const userVotePosition = getUserVotePosition();
 
   // Use MainLayout for non-authenticated, AuthLayout for authenticated
@@ -563,89 +564,27 @@ export default function PostDetailsPage() {
                 Comments ({post._count?.comments || post.commentCount || 0})
               </h3>
               
-              {/* Comment Input */}
-              {!isAuthenticated ? (
-                // Non-authenticated user - show login prompt to comment
-                <div className="comment-input-section">
-                  <div className="comment-input-container">
-                    <div className="comment-author-avatar">
-                      <span className="comment-avatar-initial">?</span>
-                    </div>
-                    <input
-                      type="text"
-                      className="comment-input"
-                      placeholder="Login to join the discussion"
-                      disabled={true}
-                    />
-                    <button 
-                      className="comment-send-button" 
-                      disabled={true}
-                      onClick={() => router.push('/login')}
-                      title="Please login to comment"
-                    >
-                      Login
-                    </button>
-                  </div>
-                  <p className="comment-hint">
-                    Please login to comment on this post
-                  </p>
-                </div>
-              ) : !isAuthor && (
-                // Authenticated user (not author) - show comment input
-                <div className="comment-input-section">
-                  <div className="comment-input-container">
-                    <div className="comment-author-avatar">
-                      {user?.profilePicture ? (
-                        <img
-                          src={user.profilePicture}
-                          alt={user.username || 'You'}
-                          className="comment-avatar-image"
-                        />
-                      ) : (
-                        <span className="comment-avatar-initial">
-                          {user?.username?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      )}
-                    </div>
-                    <input
-                      type="text"
-                      className="comment-input"
-                      placeholder={canComment ? "Share your thoughts...." : "Vote to join the discussion"}
-                      disabled={!canComment}
-                    />
-                    <button 
-                      className="comment-send-button" 
-                      disabled={!canComment}
-                      title={!canComment ? "Please vote first to comment" : ""}
-                    >
-                      Send
-                    </button>
-                  </div>
-                  {!canComment && (
-                    <p className="comment-hint">
-                      Please vote to join the discussion
-                    </p>
-                  )}
+              {/* Show comments for all users (authenticated and non-authenticated can view) */}
+              {(hasVoted || isAuthor || !isAuthenticated) && (
+                <CommentSection
+                  postId={post.id}
+                  userVote={userVote}
+                  isAuthor={isAuthor}
+                  onCommentAdded={() => {
+                    // Refresh post to update comment count
+                    api.getPost(postId).then((updatedPost) => {
+                      setPost(updatedPost);
+                    }).catch(console.error);
+                  }}
+                />
+              )}
+              
+              {/* Show message for authenticated users who haven't voted yet */}
+              {isAuthenticated && !hasVoted && !isAuthor && (
+                <div className="comments-placeholder">
+                  <p>Vote to see comments and join the discussion</p>
                 </div>
               )}
-
-              {/* Comments List - Show comments for all users (authenticated and non-authenticated) */}
-              <div className="comments-list">
-                {hasVoted || isAuthor || !isAuthenticated ? (
-                  // Show comments if:
-                  // - User has voted (authenticated)
-                  // - User is author (authenticated)
-                  // - User is not authenticated (can view but not comment)
-                  <p className="comments-placeholder">
-                    Comments will be implemented in Phase 9
-                  </p>
-                ) : (
-                  // Authenticated user who hasn't voted yet
-                  <p className="comments-placeholder">
-                    Vote to see comments and join the discussion
-                  </p>
-                )}
-              </div>
             </div>
           </article>
             </div>

@@ -51,3 +51,26 @@ export interface Post {
   };
 }
 
+export interface Comment {
+  id: string;
+  postId: string;
+  userId: string;
+  content: string;
+  parentId: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    username: string | null;
+    profilePicture: string | null;
+  };
+  replies?: Comment[];
+  _count?: {
+    replies: number;
+  };
+  // For display purposes
+  commentNumber?: string; // B1, B1-1, B1-2, etc.
+  replyToNumber?: string; // B1-1 if replying to B1-1
+}
+
