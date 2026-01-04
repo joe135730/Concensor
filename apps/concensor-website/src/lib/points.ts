@@ -22,14 +22,15 @@ export const POINTS_CONFIG = {
 
 /**
  * Badge level thresholds (points required)
- * Badge levels: 0 = no badge, 1 = Rookie, 2 = Apprentice, 3 = Expert, 4 = Master, 5 = Legend
+ * Badge levels: 0 = no badge, 1 = Rookie (default for all users), 2 = Apprentice, 3 = Expert, 4 = Master, 5 = Legend
+ * Note: Rookie badge (level 1) is automatically given to all users at 0 points
  */
 export const BADGE_THRESHOLDS = {
-  ROOKIE: 50,        // Level 1: 50-99 points
+  ROOKIE: 0,         // Level 1: 0+ points (default for all new users)
   APPRENTICE: 100,   // Level 2: 100-249 points
-  EXPERT: 250,       // Level 3: 250-499 points
-  MASTER: 500,       // Level 4: 500-999 points
-  LEGEND: 1000,      // Level 5: 1000+ points
+  EXPERT: 500,       // Level 3: 500-999 points
+  MASTER: 1500,      // Level 4: 1500-2999 points
+  LEGEND: 5000,      // Level 5: 5000+ points
 } as const;
 
 /**
@@ -52,20 +53,20 @@ export const BADGE_NAMES = {
  * Calculate badge level based on points
  * @param points - Current points in category
  * @returns Badge level (0-5)
+ * Note: All users start with Rookie badge (level 1) at 0 points
  */
 export function calculateBadgeLevel(points: number): number {
-  if (points < BADGE_THRESHOLDS.ROOKIE) {
-    return 0; // No badge
-  } else if (points < BADGE_THRESHOLDS.APPRENTICE) {
-    return 1; // Rookie
+  // All users get Rookie badge (level 1) by default at 0 points
+  if (points < BADGE_THRESHOLDS.APPRENTICE) {
+    return 1; // Rookie (0-99 points)
   } else if (points < BADGE_THRESHOLDS.EXPERT) {
-    return 2; // Apprentice
+    return 2; // Apprentice (100-499 points)
   } else if (points < BADGE_THRESHOLDS.MASTER) {
-    return 3; // Expert
+    return 3; // Expert (500-1499 points)
   } else if (points < BADGE_THRESHOLDS.LEGEND) {
-    return 4; // Master
+    return 4; // Master (1500-4999 points)
   } else {
-    return 5; // Legend
+    return 5; // Legend (5000+ points)
   }
 }
 
@@ -89,19 +90,18 @@ export function getBadgeName(level: number): string {
 export function getPointsForNextLevel(currentLevel: number): number | null {
   switch (currentLevel) {
     case 0:
-      return BADGE_THRESHOLDS.ROOKIE;
-    case 1:
+    case 1: // Rookie (default) -> Apprentice
       return BADGE_THRESHOLDS.APPRENTICE;
-    case 2:
+    case 2: // Apprentice -> Expert
       return BADGE_THRESHOLDS.EXPERT;
-    case 3:
+    case 3: // Expert -> Master
       return BADGE_THRESHOLDS.MASTER;
-    case 4:
+    case 4: // Master -> Legend
       return BADGE_THRESHOLDS.LEGEND;
     case 5:
       return null; // Already at max level
     default:
-      return BADGE_THRESHOLDS.ROOKIE;
+      return BADGE_THRESHOLDS.APPRENTICE;
   }
 }
 

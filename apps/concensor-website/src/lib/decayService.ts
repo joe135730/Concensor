@@ -43,24 +43,36 @@ export async function applyBadgeDecayOnLogin(
     // Only update if points changed (decay occurred)
     if (decayedPoints !== cp.points) {
       const newBadgeLevel = calculateBadgeLevel(decayedPoints);
+      // Ensure badge level is at least 1 (Rookie) - users should always have Rookie badge
+      const finalBadgeLevel = Math.max(1, newBadgeLevel);
 
       await db.userCategoryPoints.update({
         where: { id: cp.id },
         data: {
           points: decayedPoints,
-          currentBadgeLevel: newBadgeLevel,
+          currentBadgeLevel: finalBadgeLevel,
           // Note: peakPoints and peakBadgeLevel are not affected by decay
           lastLoginDate: currentDate,
         },
       });
     } else {
-      // Even if no decay, update lastLoginDate
-      await db.userCategoryPoints.update({
-        where: { id: cp.id },
-        data: {
-          lastLoginDate: currentDate,
-        },
-      });
+      // Even if no decay, update lastLoginDate and ensure badge level is at least 1
+      if (cp.currentBadgeLevel < 1) {
+        await db.userCategoryPoints.update({
+          where: { id: cp.id },
+          data: {
+            currentBadgeLevel: 1, // Ensure Rookie badge
+            lastLoginDate: currentDate,
+          },
+        });
+      } else {
+        await db.userCategoryPoints.update({
+          where: { id: cp.id },
+          data: {
+            lastLoginDate: currentDate,
+          },
+        });
+      }
     }
   });
 

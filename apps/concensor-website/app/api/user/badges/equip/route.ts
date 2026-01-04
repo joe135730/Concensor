@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has a badge in this category
-    const userCategoryPoints = await db.userCategoryPoints.findUnique({
+    // Get or create UserCategoryPoints (should exist with Rookie badge, but create if missing)
+    let userCategoryPoints = await db.userCategoryPoints.findUnique({
       where: {
         userId_categoryId: {
           userId: user.id,
@@ -73,18 +74,46 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!userCategoryPoints || userCategoryPoints.currentBadgeLevel === 0) {
-      return NextResponse.json(
-        { error: 'You do not have a badge in this category yet' },
-        { status: 400 }
-      );
+    // If no record exists, create one with Rookie badge (level 1)
+    if (!userCategoryPoints) {
+      userCategoryPoints = await db.userCategoryPoints.create({
+        data: {
+          userId: user.id,
+          categoryId,
+          points: 0,
+          peakPoints: 0,
+          currentBadgeLevel: 1, // Rookie badge by default
+          peakBadgeLevel: 1,
+          lastLoginDate: new Date(),
+        },
+      });
     }
 
-    // Update user's equipped badge
+    // Users should always have at least Rookie badge (level 1), but check just in case
+    if (userCategoryPoints.currentBadgeLevel === 0) {
+      // Update to Rookie badge if somehow at level 0
+      userCategoryPoints = await db.userCategoryPoints.update({
+        where: {
+          userId_categoryId: {
+            userId: user.id,
+            categoryId,
+          },
+        },
+        data: {
+          currentBadgeLevel: 1,
+          peakBadgeLevel: Math.max(1, userCategoryPoints.peakBadgeLevel),
+        },
+      });
+    }
+
+    // Toggle equipped badge: if already equipped, unequip it; otherwise, equip it
+    const isCurrentlyEquipped = user.equippedBadgeCategoryId === categoryId;
+    const newEquippedBadgeCategoryId = isCurrentlyEquipped ? null : categoryId;
+
     const updatedUser = await db.user.update({
       where: { id: user.id },
       data: {
-        equippedBadgeCategoryId: categoryId,
+        equippedBadgeCategoryId: newEquippedBadgeCategoryId,
       },
       select: {
         id: true,
@@ -95,6 +124,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       equippedBadgeCategoryId: updatedUser.equippedBadgeCategoryId,
+      action: isCurrentlyEquipped ? 'unequipped' : 'equipped',
     });
   } catch (error: any) {
     console.error('Error equipping badge:', error);

@@ -33,7 +33,8 @@ export async function updateCategoryPoints(
 
   const currentPoints = existing?.points || 0;
   const newPoints = Math.max(0, currentPoints + pointsToAdd); // Don't go below 0
-  const newBadgeLevel = calculateBadgeLevel(newPoints);
+  // All users should have at least Rookie badge (level 1), so ensure badge level is at least 1
+  const newBadgeLevel = Math.max(1, calculateBadgeLevel(newPoints));
 
   // Update or create UserCategoryPoints
   const updated = await db.userCategoryPoints.upsert({
@@ -48,8 +49,8 @@ export async function updateCategoryPoints(
       categoryId,
       points: newPoints,
       peakPoints: newPoints, // First time, so peak = current
-      currentBadgeLevel: newBadgeLevel,
-      peakBadgeLevel: newBadgeLevel,
+      currentBadgeLevel: Math.max(1, newBadgeLevel), // At least Rookie badge (level 1)
+      peakBadgeLevel: Math.max(1, newBadgeLevel), // At least Rookie badge (level 1)
       lastLoginDate: new Date(),
     },
     update: {

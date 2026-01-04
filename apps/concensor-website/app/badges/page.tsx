@@ -81,11 +81,33 @@ export default function BadgesPage() {
             });
 
             // Combine categories with user points
-            const badgesData: BadgeData[] = categories.map((category: Category) => ({
-              category,
-              userPoints: pointsMap.get(category.id) || null,
-              equipped: category.id === pointsData.equippedBadgeCategoryId,
-            }));
+            // If no UserCategoryPoints record exists, create a default one with Rookie badge
+            const badgesData: BadgeData[] = categories.map((category: Category) => {
+              const userPoints = pointsMap.get(category.id);
+              if (!userPoints) {
+                // Create default Rookie badge entry
+                return {
+                  category,
+                  userPoints: {
+                    categoryId: category.id,
+                    category: category,
+                    points: 0,
+                    peakPoints: 0,
+                    currentBadgeLevel: 1, // Rookie badge
+                    currentBadgeName: 'Rookie',
+                    peakBadgeLevel: 1,
+                    peakBadgeName: 'Rookie',
+                    lastLoginDate: null,
+                  } as CategoryPoints,
+                  equipped: category.id === pointsData.equippedBadgeCategoryId,
+                };
+              }
+              return {
+                category,
+                userPoints,
+                equipped: category.id === pointsData.equippedBadgeCategoryId,
+              };
+            });
 
             setBadges(badgesData);
           } else {
@@ -119,21 +141,27 @@ export default function BadgesPage() {
       setEquipping(categoryId);
       
       const data = await api.equipBadge(categoryId);
-      setEquippedBadgeCategoryId(data.equippedBadgeCategoryId);
+      const newEquippedId = data.equippedBadgeCategoryId;
+      setEquippedBadgeCategoryId(newEquippedId);
 
-      // Update local state
+      // Update local state - only the clicked category should be equipped
       setBadges(prev => prev.map(badge => ({
         ...badge,
-        equipped: badge.category.id === categoryId,
+        equipped: badge.category.id === categoryId && newEquippedId === categoryId,
       })));
     } catch (err: any) {
-      alert(err.message || 'Failed to equip badge');
+      alert(err.message || 'Failed to toggle badge');
     } finally {
       setEquipping(null);
     }
   };
 
   const getBadgeStatus = (badgeLevel: number, userPoints: CategoryPoints | null) => {
+    // Rookie (level 1) is always achieved (default for all users)
+    if (badgeLevel === 1) {
+      return { achieved: true, isCurrent: !userPoints || userPoints.currentBadgeLevel === 1 };
+    }
+    
     if (!userPoints) {
       return { achieved: false, isCurrent: false };
     }
@@ -199,11 +227,97 @@ export default function BadgesPage() {
                               <span className="level-label">Current Badge:</span>
                               <span className="level-value">{userPoints.currentBadgeName}</span>
                             </div>
+                            {(() => {
+                              const nextLevelPoints = getPointsForNextLevel(userPoints.currentBadgeLevel);
+                              if (nextLevelPoints === null) {
+                                // Already at max level (Legend)
+                                return (
+                                  <div className="badge-progress-section">
+                                    <div className="badge-progress-header">
+                                      <span className="badge-progress-label">Max Level Achieved!</span>
+                                    </div>
+                                    <div className="badge-progress-bar-container">
+                                      <div className="badge-progress-bar" style={{ width: '100%' }}>
+                                        <div className="badge-progress-fill max-level" style={{ width: '100%' }}></div>
+                                      </div>
+                                    </div>
+                                    <div className="badge-progress-text">
+                                      <span>Legend Badge - {userPoints.points} points</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              
+                              // Calculate progress from current level start to next level
+                              // For Rookie (level 1), start is 0
+                              const currentLevelStart = userPoints.currentBadgeLevel === 1 
+                                ? 0 
+                                : userPoints.currentBadgeLevel === 2
+                                ? BADGE_THRESHOLDS.APPRENTICE
+                                : userPoints.currentBadgeLevel === 3
+                                ? BADGE_THRESHOLDS.EXPERT
+                                : userPoints.currentBadgeLevel === 4
+                                ? BADGE_THRESHOLDS.MASTER
+                                : BADGE_THRESHOLDS.LEGEND;
+                              
+                              const progressRange = nextLevelPoints - currentLevelStart;
+                              const currentProgress = userPoints.points - currentLevelStart;
+                              const progressPercentage = Math.min(100, Math.max(0, (currentProgress / progressRange) * 100));
+                              const pointsNeeded = nextLevelPoints - userPoints.points;
+                              const nextBadgeName = BADGE_NAMES[(userPoints.currentBadgeLevel + 1) as keyof typeof BADGE_NAMES];
+
+                              return (
+                                <div className="badge-progress-section">
+                                  <div className="badge-progress-header">
+                                    <span className="badge-progress-label">Progress to {nextBadgeName}</span>
+                                    <span className="badge-progress-percentage">{Math.round(progressPercentage)}%</span>
+                                  </div>
+                                  <div className="badge-progress-bar-container">
+                                    <div className="badge-progress-bar">
+                                      <div 
+                                        className="badge-progress-fill" 
+                                        style={{ width: `${progressPercentage}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                  <div className="badge-progress-text">
+                                    <span>{userPoints.points} / {nextLevelPoints} points</span>
+                                    <span className="badge-progress-remaining">
+                                      {pointsNeeded > 0 ? `${pointsNeeded} points to go` : 'Level up!'}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </>
                         ) : (
-                          <div className="badge-category-points">
-                            <span className="points-label">No activity yet</span>
-                          </div>
+                          <>
+                            <div className="badge-category-points">
+                              <span className="points-label">Current Points:</span>
+                              <span className="points-value">0</span>
+                            </div>
+                            <div className="badge-category-level">
+                              <span className="level-label">Current Badge:</span>
+                              <span className="level-value">Rookie</span>
+                            </div>
+                            <div className="badge-progress-section">
+                              <div className="badge-progress-header">
+                                <span className="badge-progress-label">Progress to Apprentice</span>
+                                <span className="badge-progress-percentage">0%</span>
+                              </div>
+                              <div className="badge-progress-bar-container">
+                                <div className="badge-progress-bar">
+                                  <div className="badge-progress-fill" style={{ width: '0%' }}></div>
+                                </div>
+                              </div>
+                              <div className="badge-progress-text">
+                                <span>0 / {BADGE_THRESHOLDS.APPRENTICE} points</span>
+                                <span className="badge-progress-remaining">
+                                  {BADGE_THRESHOLDS.APPRENTICE} points to go
+                                </span>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
 
@@ -240,7 +354,9 @@ export default function BadgesPage() {
                                 )}
                               </div>
                               <div className="badge-level-requirements">
-                                {achieved ? (
+                                {level === 1 ? (
+                                  <span className="badge-requirement-text">Default badge for all users</span>
+                                ) : achieved ? (
                                   <span className="badge-requirement-text">Requires {pointsRequired} points</span>
                                 ) : (
                                   <span className="badge-requirement-text">
@@ -253,11 +369,16 @@ export default function BadgesPage() {
                               </div>
                               {achieved && (
                                 <button
-                                  className={`badge-equip-button ${equipped && isCurrent ? 'equipped' : ''}`}
+                                  className={`badge-equip-button ${equipped && isCurrent ? 'equipped unequip' : ''}`}
                                   onClick={() => handleEquipBadge(category.id, level)}
                                   disabled={equipping === category.id}
                                 >
-                                  {equipped && isCurrent ? '✓ Equipped' : 'Equip Badge'}
+                                  {equipping === category.id 
+                                    ? '...' 
+                                    : equipped && isCurrent 
+                                    ? '✓ Equipped - Click to Unequip' 
+                                    : 'Equip Badge'
+                                  }
                                 </button>
                               )}
                             </div>

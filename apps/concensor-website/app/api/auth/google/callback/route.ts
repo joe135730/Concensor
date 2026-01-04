@@ -19,6 +19,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { db } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
 import { applyBadgeDecayOnLogin } from '@/lib/decayService';
+import { initializeRookieBadges } from '@/lib/badgeInit';
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -189,6 +190,14 @@ export async function GET(request: NextRequest) {
           tokenVersion: 0,
         },
       });
+
+      // Initialize Rookie badges for new Google OAuth users
+      try {
+        await initializeRookieBadges(db, user.id);
+      } catch (badgeError) {
+        // Log error but don't fail login - badges can be initialized later
+        console.error('Failed to initialize badges:', badgeError);
+      }
     }
 
     // Generate JWT token (same as email/password login)
