@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { calculateHotScore, recalculateHotScore } from '@/lib/hotScore';
+import { awardPostPoints } from '@/lib/pointsService';
 
 /**
  * Helper function to get authenticated user from request
@@ -326,6 +327,15 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    // Award points to the post author
+    try {
+      await awardPostPoints(db, user.id, mainCategoryId);
+    } catch (pointsError) {
+      // Log error but don't fail the post creation
+      // Points can be recalculated if needed
+      console.error('Error awarding post points:', pointsError);
+    }
 
     return NextResponse.json(post, { status: 201 });
   } catch (error: any) {

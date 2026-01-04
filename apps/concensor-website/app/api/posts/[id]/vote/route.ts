@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { recalculateHotScore } from '@/lib/hotScore';
+import { awardVotePoints } from '@/lib/pointsService';
 
 /**
  * Helper function to get authenticated user from request
@@ -135,13 +136,14 @@ export async function POST(
         },
       });
 
-      // Get current post to calculate new hot score
+      // Get current post to calculate new hot score and get category
       const currentPost = await tx.post.findUnique({
         where: { id: postId },
         select: {
           totalVotes: true,
           commentCount: true,
           createdAt: true,
+          mainCategoryId: true,
         },
       });
 
@@ -217,8 +219,24 @@ export async function POST(
         },
       });
 
-      return { vote, post: updatedPost };
+      // Award points to the voter (using main category)
+      // Note: We use the transaction client (tx) but pointsService expects PrismaClient
+      // We'll need to pass the transaction client or refactor pointsService
+      // For now, we'll award points after the transaction completes
+      // This is safe because points are idempotent (we can recalculate if needed)
+
+      return { vote, post: updatedPost, mainCategoryId: currentPost.mainCategoryId };
     });
+
+    // Award points to the voter (after transaction completes)
+    // This ensures the vote is committed before awarding points
+    try {
+      await awardVotePoints(db, user.id, result.mainCategoryId);
+    } catch (pointsError) {
+      // Log error but don't fail the vote request
+      // Points can be recalculated if needed
+      console.error('Error awarding vote points:', pointsError);
+    }
 
     return NextResponse.json({
       success: true,

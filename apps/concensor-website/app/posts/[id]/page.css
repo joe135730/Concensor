@@ -15,8 +15,23 @@
   transition: margin-left 0.3s ease;
 }
 
-.post-details-main.sidebar-open {
-  margin-left: 0;
+/* Desktop: Post details main shifts when sidebar opens/closes */
+@media screen and (min-width: 1024px) {
+  .post-details-main {
+    margin-left: 0; /* Default: align to screen left when sidebar closed */
+  }
+
+  .post-details-main.sidebar-open {
+    margin-left: 250px; /* Account for fixed sidebar width when open */
+  }
+}
+
+/* Mobile: Post details main doesn't move, always align to screen left */
+@media screen and (max-width: 1023px) {
+  .post-details-main {
+    width: 100%;
+    margin-left: 0; /* Always align to screen left on mobile */
+  }
 }
 
 .post-details-container {

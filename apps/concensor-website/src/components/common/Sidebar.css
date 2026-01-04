@@ -135,8 +135,12 @@
 /* Desktop: Sidebar behavior (≥ 1024px) */
 @media screen and (min-width: 1024px) {
   .sidebar {
-    position: relative; /* In normal flow */
-    min-height: calc(100vh - 80px);
+    position: fixed; /* Fixed position for independent scrolling */
+    top: 70px; /* Start below header */
+    left: 0;
+    bottom: 0;
+    height: calc(100vh - 70px); /* Full height minus header */
+    z-index: 999; /* Above content but below header */
   }
 
   /* Hide sidebar when closed on desktop */
@@ -146,11 +150,13 @@
     overflow: hidden;
     padding-left: 0;
     padding-right: 0;
+    transform: translateX(-100%); /* Slide out to the left */
   }
 
   .sidebar.open {
     width: 250px;
     opacity: 1;
+    transform: translateX(0); /* Slide in */
   }
 
   .sidebar-overlay {

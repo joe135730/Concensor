@@ -28,7 +28,7 @@
   }
 
   .entry-main.sidebar-open {
-    margin-left: 0; /* When sidebar open, it's in flex flow, so no margin needed */
+    margin-left: 250px; /* Account for fixed sidebar width when open */
   }
 }
 

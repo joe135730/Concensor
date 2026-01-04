@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
 import { db } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
+import { applyBadgeDecayOnLogin } from '@/lib/decayService';
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -213,6 +214,14 @@ export async function GET(request: NextRequest) {
 
     // Clear OAuth state cookie
     response.cookies.delete('oauth_state');
+
+    // Apply badge decay on login (non-blocking)
+    try {
+      await applyBadgeDecayOnLogin(db, user.id);
+    } catch (decayError) {
+      // Log error but don't fail login if decay calculation fails
+      console.error('Error applying badge decay on login:', decayError);
+    }
 
     return response;
   } catch (error: any) {
