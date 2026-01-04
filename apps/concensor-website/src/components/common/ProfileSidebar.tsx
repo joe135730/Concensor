@@ -53,6 +53,14 @@ export default function ProfileSidebar() {
             Profile
           </button>
 
+          {/* Badges */}
+          <button
+            className={`sidebar-link ${isActive('/badges') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/badges')}
+          >
+            Badges
+          </button>
+
           {/* Ideology */}
           <button
             className={`sidebar-link ${isActive('/ideology') ? 'active' : ''}`}

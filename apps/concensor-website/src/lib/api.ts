@@ -279,6 +279,14 @@ export const api = {
   updateProfile: (data: any) =>
     apiClient.put('/api/user/profile', data).then((response) => response.data),
 
+  // GET /api/user/points - Get current user's points and badges
+  getUserPoints: () =>
+    apiClient.get('/api/user/points').then((response) => response.data),
+
+  // POST /api/user/badges/equip - Equip a badge
+  equipBadge: (categoryId: string) =>
+    apiClient.post('/api/user/badges/equip', { categoryId }).then((response) => response.data),
+
   /**
    * Logout API call
    * 
