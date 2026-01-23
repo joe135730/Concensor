@@ -13,12 +13,19 @@ Concensor is a social media platform specifically for discussing politics
 ### Installation
 ```bash
 git clone https://github.com/yourusername/concensor.git
+```
+```bash
 cd apps/concensor-website
+```
+```bash
 # Database (Optional)
 # Apply any pending migrations to your database (keeps schema in sync)
 npx prisma migrate deploy
 # Regenerate the Prisma Client (keeps generated types/models up to date)
 npx prisma generate
+```
+```bash
+# Setup
 npm install
 npm run dev
 ```
