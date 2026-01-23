@@ -18,6 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
+import SavedButton from '@/components/common/SavedButton';
 import './page.css';
 
 type VoteType = 'strongly_disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly_agree';
@@ -366,17 +367,14 @@ export default function PostDetailsPage() {
                     <path d="M12 3l4 4h-3v6h-2V7H8l4-4zm-6 9h2v6h8v-6h2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6z" />
                   </svg>
                 </button>
-                <button
-                  type="button"
-                  className={`post-action-button save-button ${isSaved ? 'active' : ''}`}
+                <SavedButton
+                  isSaved={isSaved}
+                  size={36}
+                  className="post-action-button post-details-save-button"
                   onClick={handleToggleSave}
-                  aria-label={isSaved ? 'Unsave post' : 'Save post'}
+                  ariaLabel={isSaved ? 'Unsave post' : 'Save post'}
                   disabled={saving}
-                >
-                  <svg viewBox="0 0 24 24" role="presentation">
-                    <path d="M7 4a2 2 0 0 0-2 2v14l7-3.5L19 20V6a2 2 0 0 0-2-2H7z" />
-                  </svg>
-                </button>
+                />
               </div>
             </div>
             <div className="post-details-content">{post.content}</div>

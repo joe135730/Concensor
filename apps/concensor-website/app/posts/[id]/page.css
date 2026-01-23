@@ -247,7 +247,7 @@
   cursor: not-allowed;
 }
 
-.post-action-button.save-button.active {
+.post-details-save-button.is-saved {
   background-color: #1a4b7c;
   border-color: #1a4b7c;
   color: #ffffff;

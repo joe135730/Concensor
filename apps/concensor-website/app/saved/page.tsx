@@ -8,7 +8,7 @@
  * Requires authentication.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AuthLayout from '@/layouts/AuthLayout';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +16,7 @@ import { useSidebar } from '@/contexts/SidebarContext';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
 import Sidebar from '@/components/common/Sidebar';
+import SavedButton from '@/components/common/SavedButton';
 import './page.css';
 
 export default function SavedPostsPage() {
@@ -25,6 +26,9 @@ export default function SavedPostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [pendingRemovals, setPendingRemovals] = useState<Record<string, boolean>>({});
+  const pendingRemovalsRef = useRef<Record<string, boolean>>({});
+  const removalTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -53,9 +57,61 @@ export default function SavedPostsPage() {
     }
   }, [authLoading, isAuthenticated]);
 
+  useEffect(() => {
+    pendingRemovalsRef.current = pendingRemovals;
+  }, [pendingRemovals]);
+
+  useEffect(() => {
+    return () => {
+      const pendingIds = Object.keys(pendingRemovalsRef.current);
+      if (pendingIds.length === 0) return;
+
+      pendingIds.forEach((postId) => {
+        const timer = removalTimersRef.current[postId];
+        if (timer) {
+          clearTimeout(timer);
+        }
+        api.unsavePost(postId).catch(() => {});
+      });
+    };
+  }, []);
+
   if (authLoading || !isAuthenticated) {
     return null;
   }
+
+  const handleToggleSaved = (postId: string) => {
+    if (pendingRemovals[postId]) {
+      const timer = removalTimersRef.current[postId];
+      if (timer) {
+        clearTimeout(timer);
+      }
+      delete removalTimersRef.current[postId];
+      setPendingRemovals((prev) => {
+        const next = { ...prev };
+        delete next[postId];
+        return next;
+      });
+      return;
+    }
+
+    setPendingRemovals((prev) => ({ ...prev, [postId]: true }));
+    removalTimersRef.current[postId] = setTimeout(async () => {
+      try {
+        await api.unsavePost(postId);
+        setPosts((prev) => prev.filter((item) => item.id !== postId));
+      } catch (err: any) {
+        setError(err.message || 'Failed to update saved posts');
+        setPendingRemovals((prev) => {
+          const next = { ...prev };
+          delete next[postId];
+          return next;
+        });
+      } finally {
+        delete removalTimersRef.current[postId];
+      }
+    }, 4000);
+  };
 
   return (
     <AuthLayout>
@@ -77,19 +133,39 @@ export default function SavedPostsPage() {
                 {posts.map((post) => (
                   <article
                     key={post.id}
-                    className="saved-post-card"
+                    className={`saved-post-card ${pendingRemovals[post.id] ? 'pending-removal' : ''}`}
                     onClick={() => router.push(`/posts/${post.id}`)}
                     style={{ cursor: 'pointer' }}
                   >
                     <div className="saved-post-card-header">
                       <h2 className="saved-post-card-title">{post.title}</h2>
-                      <span className="saved-post-bookmark" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" role="presentation">
-                          <path d="M7 4a2 2 0 0 0-2 2v14l7-3.5L19 20V6a2 2 0 0 0-2-2H7z" />
-                        </svg>
-                      </span>
+                      <SavedButton
+                        isSaved={!pendingRemovals[post.id]}
+                        size={28}
+                        className="saved-card-button"
+                        ariaLabel={pendingRemovals[post.id] ? 'Undo remove from saved' : 'Remove from saved'}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleSaved(post.id);
+                        }}
+                      />
                     </div>
                     <p className="saved-post-card-content">{post.content}</p>
+                    {pendingRemovals[post.id] && (
+                      <div className="saved-post-undo">
+                        Removed from saved.
+                        <button
+                          type="button"
+                          className="saved-post-undo-button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleToggleSaved(post.id);
+                          }}
+                        >
+                          Undo
+                        </button>
+                      </div>
+                    )}
                   </article>
                 ))}
               </div>

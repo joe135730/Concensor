@@ -1,0 +1,33 @@
+.saved-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #1a4b7c;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.saved-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.saved-button svg {
+  width: 100%;
+  height: 100%;
+}
+
+.saved-button .saved-icon-outline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.saved-button .saved-icon-filled {
+  fill: currentColor;
+}
