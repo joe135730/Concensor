@@ -42,6 +42,8 @@ export default function PostDetailsPage() {
   const [deleting, setDeleting] = useState(false);
   const [showVotePreview, setShowVotePreview] = useState(false);
   const [selectedVote, setSelectedVote] = useState<VoteType | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const postId = params?.id as string;
 
@@ -67,8 +69,16 @@ export default function PostDetailsPage() {
             // If no vote or error, set to null
             setUserVote(null);
           }
+
+          try {
+            const savedData = await api.getSavedPostStatus(postId);
+            setIsSaved(!!savedData.saved);
+          } catch (err) {
+            setIsSaved(false);
+          }
         } else {
           setUserVote(null);
+          setIsSaved(false);
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load post');
@@ -93,6 +103,34 @@ export default function PostDetailsPage() {
       alert(err.message || 'Failed to delete post');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleShare = () => {
+    const link = window.location.href;
+    window.prompt('Copy this link:', link);
+  };
+
+  const handleToggleSave = async () => {
+    if (!post) return;
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      if (isSaved) {
+        await api.unsavePost(post.id);
+        setIsSaved(false);
+      } else {
+        await api.savePost(post.id);
+        setIsSaved(true);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to update saved state');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -315,7 +353,32 @@ export default function PostDetailsPage() {
               </div>
             </div>
 
-            <h1 className="post-details-title">{post.title}</h1>
+            <div className="post-details-header">
+              <h1 className="post-details-title">{post.title}</h1>
+              <div className="post-details-actions">
+                <button
+                  type="button"
+                  className="post-action-button"
+                  onClick={handleShare}
+                  aria-label="Share post"
+                >
+                  <svg viewBox="0 0 24 24" role="presentation">
+                    <path d="M12 3l4 4h-3v6h-2V7H8l4-4zm-6 9h2v6h8v-6h2v6a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-6z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  className={`post-action-button save-button ${isSaved ? 'active' : ''}`}
+                  onClick={handleToggleSave}
+                  aria-label={isSaved ? 'Unsave post' : 'Save post'}
+                  disabled={saving}
+                >
+                  <svg viewBox="0 0 24 24" role="presentation">
+                    <path d="M7 4a2 2 0 0 0-2 2v14l7-3.5L19 20V6a2 2 0 0 0-2-2H7z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
             <div className="post-details-content">{post.content}</div>
 
             {/* Post Stats */}

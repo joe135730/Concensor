@@ -41,3 +41,96 @@
   }
 }
 
+.saved-posts-title {
+  font-family: 'Kadwa', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 1.75rem;
+}
+
+.saved-posts-loading,
+.saved-posts-error,
+.saved-posts-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.05rem;
+  color: #6f6f6f;
+}
+
+.saved-posts-error {
+  color: #d32f2f;
+}
+
+.saved-posts-empty {
+  color: #9a9a9a;
+  font-style: italic;
+}
+
+.saved-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.saved-post-card {
+  background-color: #ffffff;
+  border-radius: 14px;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid #e4e4e4;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.saved-post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+.saved-post-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.saved-post-card-title {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+.saved-post-bookmark {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a4b7c;
+  flex-shrink: 0;
+}
+
+.saved-post-bookmark svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+.saved-post-card-content {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.98rem;
+  color: #a0a0a0;
+  margin: 0;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

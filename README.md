@@ -15,6 +15,8 @@ Concensor is a social media platform specifically for discussing politics
 git clone https://github.com/yourusername/concensor.git
 cd concensor
 npm install
+npx prisma migrate deploy
+npx prisma generate
 npm run dev
 ```
 

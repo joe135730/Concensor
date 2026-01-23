@@ -13,7 +13,7 @@
  */
 
 import axios, { AxiosError, AxiosInstance } from 'axios';
-import { Category } from '@/types';
+import { Category, Post } from '@/types';
 
 // Base URL for API requests
 // For Next.js API routes (same origin), use empty string (relative paths)
@@ -396,6 +396,38 @@ export const api = {
    */
   getCategoryBySlug: (slug: string) =>
     apiClient.get<Category>(`/api/categories/${slug}`).then((response) => response.data),
+
+  /**
+   * Saved Posts API
+   * 
+   * Returns posts the current user has saved.
+   */
+  getSavedPosts: () =>
+    apiClient.get<{ posts: Post[] }>('/api/saved').then((response) => response.data.posts),
+
+  /**
+   * Saved Post Status API
+   * 
+   * @param postId - ID of the post to check
+   */
+  getSavedPostStatus: (postId: string) =>
+    apiClient.get<{ saved: boolean }>(`/api/saved/${postId}`).then((response) => response.data),
+
+  /**
+   * Save a post for the current user
+   * 
+   * @param postId - ID of the post to save
+   */
+  savePost: (postId: string) =>
+    apiClient.post<{ saved: boolean }>(`/api/saved/${postId}`).then((response) => response.data),
+
+  /**
+   * Unsave a post for the current user
+   * 
+   * @param postId - ID of the post to unsave
+   */
+  unsavePost: (postId: string) =>
+    apiClient.delete<{ saved: boolean }>(`/api/saved/${postId}`).then((response) => response.data),
   
   /**
    * Get user's recently viewed categories (LRU)

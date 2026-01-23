@@ -39,6 +39,7 @@ model User {
   categoryViews            UserCategoryView[]
   equippedBadgeCategoryId   String? // ID of main category whose badge is currently equipped
   equippedBadgeCategory    Category? @relation("EquippedBadge", fields: [equippedBadgeCategoryId], references: [id])
+  savedPosts               SavedPost[]
 
   @@map("users")
 }
@@ -109,6 +110,7 @@ model Post {
   // Relations
   votes       Vote[]
   comments    Comment[]
+  savedBy     SavedPost[]
 
   @@index([authorId])
   @@index([mainCategoryId])
@@ -117,6 +119,23 @@ model Post {
   @@index([hotScore]) // For efficient popular posts queries
   @@index([createdAt])
   @@map("posts")
+}
+
+// ============================================
+// SAVED POST MODEL
+// ============================================
+model SavedPost {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@map("saved_posts")
 }
 
 // ============================================
