@@ -229,7 +229,7 @@ export default function Sidebar() {
             className={`sidebar-link ${isActive('/all') ? 'active' : ''}`}
             onClick={() => handleNavigation('/all')}
           >
-            All Posts
+            Explore
           </button>
 
           <button

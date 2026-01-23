@@ -62,7 +62,7 @@ export default function AllPostsPage() {
         <div className="all-posts-page-content">
           <Sidebar />
           <main className={`all-posts-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
-            <h1 className="all-posts-title">All Categories</h1>
+            <h1 className="all-posts-title">Explore</h1>
             
             {loading && <div className="all-posts-loading">Loading categories...</div>}
             {error && <div className="all-posts-error">{error}</div>}
