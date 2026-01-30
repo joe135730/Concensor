@@ -12,6 +12,7 @@ const Header = () => {
   const { isAuthenticated, user, logout, loading } = useAuth();
   const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Get sidebar context (available on pages with sidebar)
@@ -69,7 +70,28 @@ const Header = () => {
               </Link>
             </div>
             <nav className="header-nav">
-              <span className="user-greeting">Hi! ...</span>
+              <form className="header-search" onSubmit={(event) => event.preventDefault()}>
+                <input
+                  type="search"
+                  className="header-search-input"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  aria-label="Search"
+                />
+                <button className="header-search-button" type="submit" aria-label="Submit search">
+                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </form>
             </nav>
             <div className="header-right">
               <div className="profile-picture-button" style={{ opacity: 0.5 }}>
@@ -93,16 +115,35 @@ const Header = () => {
           </Link>
         </div>
         <nav className="header-nav">
-          <Link href="/" className="nav-link">Home</Link>
-          <Link href="/about" className="nav-link">About</Link>
-          <Link href="/contact" className="nav-link">Contact</Link>
+          <form className="header-search" onSubmit={(event) => event.preventDefault()}>
+            <input
+              type="search"
+              className="header-search-input"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              aria-label="Search"
+            />
+            <button className="header-search-button" type="submit" aria-label="Submit search">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
         </nav>
         <div className="header-right">
-            {/* Show nothing while loading */}
-          </div>
+          {/* Show nothing while loading */}
         </div>
-      </header>
-    );
+      </div>
+    </header>
+  );
   }
 
   return (
@@ -129,17 +170,28 @@ const Header = () => {
           </Link>
         </div>
         <nav className="header-nav">
-          {isAuthenticated ? (
-            <>
-              <span className="user-greeting">Hi! {user?.username}</span>
-            </>
-          ) : (
-            <>
-              <Link href="/" className="nav-link">Home</Link>
-              <Link href="/about" className="nav-link">About</Link>
-              <Link href="/contact" className="nav-link">Contact</Link>
-            </>
-          )}
+          <form className="header-search" onSubmit={(event) => event.preventDefault()}>
+            <input
+              type="search"
+              className="header-search-input"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              aria-label="Search"
+            />
+            <button className="header-search-button" type="submit" aria-label="Submit search">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
         </nav>
         <div className="header-right">
           {isAuthenticated ? (

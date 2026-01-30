@@ -304,12 +304,6 @@ export default function Sidebar() {
             <>
               <div className="sidebar-divider"></div>
               <button
-                className={`sidebar-link ${isActive('/saved') ? 'active' : ''}`}
-                onClick={handleSaved}
-              >
-                Saved
-              </button>
-              <button
                 className={`sidebar-link ${isActive('/messages') ? 'active' : ''}`}
                 onClick={handleMessages}
               >

@@ -15,7 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { api } from '@/lib/api';
 import { Post } from '@/types';
-import Sidebar from '@/components/common/Sidebar';
+import ProfileSidebar from '@/components/common/ProfileSidebar';
 import SavedButton from '@/components/common/SavedButton';
 import './page.css';
 
@@ -117,7 +117,7 @@ export default function SavedPostsPage() {
     <AuthLayout>
       <div className="saved-posts-page">
         <div className="saved-posts-page-content">
-          <Sidebar />
+          <ProfileSidebar />
           <main className={`saved-posts-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <h1 className="saved-posts-title">Save</h1>
 
