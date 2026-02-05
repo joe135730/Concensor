@@ -125,93 +125,96 @@ export default function ProfilePage() {
             <div className="profile-container">
               {/* My Profile Card */}
               <div className="profile-card">
-                
-                
-                <div className="profile-info">
-                  {/* Profile Picture */}
-                  <div className="profile-picture-section">
-                    {profile.profilePicture ? (
-                      <img
-                        src={profile.profilePicture}
-                        alt={`${displayName}'s profile`}
-                        className="profile-picture-large"
-                      />
-                    ) : (
-                      <div className="profile-picture-large profile-picture-placeholder">
-                        <span className="profile-picture-initial-large">
-                          {profileInitial}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Name Section */}
-                  <div className="profile-name-section">
-                    {isEditingName ? (
-                      <div className="profile-name-edit">
-                        <input
-                          type="text"
-                          value={editedName}
-                          onChange={(e) => setEditedName(e.target.value)}
-                          className="profile-name-input"
-                          autoFocus
+                <div className="profile-header-row">
+                  <div className="profile-header-left">
+                    {/* Profile Picture */}
+                    <div className="profile-picture-section">
+                      {profile.profilePicture ? (
+                        <img
+                          src={profile.profilePicture}
+                          alt={`${displayName}'s profile`}
+                          className="profile-picture-large"
                         />
-                        <div className="profile-name-actions">
-                          <button
-                            className="profile-save-button"
-                            onClick={handleSaveName}
-                          >
-                            Save
-                          </button>
-                          <button
-                            className="profile-cancel-button"
-                            onClick={handleCancelEdit}
-                          >
-                            Cancel
-                          </button>
+                      ) : (
+                        <div className="profile-picture-large profile-picture-placeholder">
+                          <span className="profile-picture-initial-large">
+                            {profileInitial}
+                          </span>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="profile-name-display">
-                        <h2 className="profile-name">{displayName}</h2>
-                        <button
-                          className="profile-edit-button"
-                          onClick={handleEditName}
-                          aria-label="Edit name"
-                        >
-                          <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
+
+                    {/* Name Section */}
+                    <div className="profile-name-section">
+                      {isEditingName ? (
+                        <div className="profile-name-edit">
+                          <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            className="profile-name-input"
+                            autoFocus
+                          />
+                          <div className="profile-name-actions">
+                            <button
+                              className="profile-save-button"
+                              onClick={handleSaveName}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="profile-cancel-button"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="profile-name-display">
+                          <h2 className="profile-name">{displayName}</h2>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="profile-divider"></div>
+                  {!isEditingName && (
+                    <button
+                      className="profile-edit-button profile-edit-button-right"
+                      onClick={handleEditName}
+                      aria-label="Edit name"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                    </button>
+                  )}
+                </div>
 
-                  {/* Contact Details */}
-                  <div className="profile-details">
-                    <div className="profile-detail-item">
-                      <span className="profile-detail-label">Email:</span>
-                      <span className="profile-detail-value">{profile.email}</span>
-                    </div>
-                    <div className="profile-detail-item">
-                      <span className="profile-detail-label">Password:</span>
-                      <span className="profile-detail-value profile-password-masked">
-                        ***********************
-                      </span>
-                    </div>
+                {/* Divider */}
+                <div className="profile-divider"></div>
+
+                {/* Contact Details */}
+                <div className="profile-details">
+                  <div className="profile-detail-item">
+                    <span className="profile-detail-label">Email</span>
+                    <span className="profile-detail-value">{profile.email}</span>
+                  </div>
+                  <div className="profile-detail-item">
+                    <span className="profile-detail-label">Password</span>
+                    <span className="profile-detail-value profile-password-masked">
+                      ***********************
+                    </span>
                   </div>
                 </div>
               </div>

@@ -44,37 +44,51 @@
 .profile-container {
   max-width: 900px;
   margin: 0 auto;
+  padding: 2rem 0 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Profile Card */
 .profile-card {
   background-color: white;
-  border-radius: 12px;
-  padding: 3rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 18px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+  width: 100%;
+  max-width: 760px;
 }
 
 .profile-title {
   font-family: 'Kadwa', sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: bold;
-  max-width: 900px;
+  max-width: 760px;
   color: #333;
-  margin: 0 auto;
+  margin: 0 auto 2rem;
   text-align: left;
+  width: 100%;
 }
 
-.profile-info {
+.profile-header-row {
   display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.profile-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
 }
 
 /* Profile Picture Section */
 .profile-picture-section {
   display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
+  justify-content: flex-start;
 }
 
 .profile-picture-large {
@@ -101,13 +115,14 @@
 
 /* Name Section */
 .profile-name-section {
-  text-align: center;
+  text-align: left;
+  min-width: 0;
 }
 
 .profile-name-display {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.75rem;
 }
 
@@ -130,6 +145,10 @@
   color: #666;
   transition: color 0.2s;
   border-radius: 4px;
+}
+
+.profile-edit-button-right {
+  margin-left: auto;
 }
 
 .profile-edit-button:hover {
@@ -194,7 +213,7 @@
 .profile-divider {
   height: 1px;
   background-color: #e0e0e0;
-  margin: 1rem 0;
+  margin: 1.75rem 0;
 }
 
 /* Contact Details */
@@ -206,23 +225,24 @@
 
 .profile-detail-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 2.5rem;
 }
 
 .profile-detail-label {
   font-family: 'Roboto', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #222;
+  text-transform: none;
+  letter-spacing: 0;
+  min-width: 110px;
 }
 
 .profile-detail-value {
   font-family: 'Roboto', sans-serif;
-  font-size: 1.1rem;
-  color: #333;
+  font-size: 1rem;
+  color: #666;
 }
 
 .profile-password-masked {
@@ -246,12 +266,29 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .profile-container {
+    padding: 1.5rem 0 2rem;
+  }
+
   .profile-card {
     padding: 2rem 1.5rem;
   }
 
   .profile-title {
     font-size: 2rem;
+  }
+
+  .profile-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-header-left {
+    width: 100%;
+  }
+
+  .profile-edit-button-right {
+    align-self: flex-end;
   }
 
   .profile-name {
@@ -261,6 +298,12 @@
   .profile-name-input {
     font-size: 1.5rem;
     min-width: 150px;
+  }
+
+  .profile-detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
 
