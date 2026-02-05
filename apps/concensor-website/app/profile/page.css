@@ -58,9 +58,10 @@
   font-family: 'Kadwa', sans-serif;
   font-size: 2.5rem;
   font-weight: bold;
+  max-width: 900px;
   color: #333;
-  margin-bottom: 2rem;
-  text-align: center;
+  margin: 0 auto;
+  text-align: left;
 }
 
 .profile-info {

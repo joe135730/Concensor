@@ -121,10 +121,11 @@ export default function ProfilePage() {
         <div className="profile-page-content">
           <ProfileSidebar />
           <main className={`profile-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <h1 className="profile-title">My Profile</h1>
             <div className="profile-container">
               {/* My Profile Card */}
               <div className="profile-card">
-                <h1 className="profile-title">My Profile</h1>
+                
                 
                 <div className="profile-info">
                   {/* Profile Picture */}
