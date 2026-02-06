@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Login function
-   * Calls API, sets user state, and redirects to /home
+   * Calls API, sets user state, and redirects to home page
    */
   const login = async (email: string, password: string) => {
     const response = await api.login({ email, password });
@@ -73,12 +73,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Use replace() instead of push() to avoid adding to history
     // This prevents the login page from being in browser history
     // and makes the redirect faster (no glitch)
-    router.replace('/home'); // Redirect to posts page after login
+    router.replace('/'); // Redirect to home page after login
   };
 
   /**
    * Logout function
    * Calls backend API to clear HttpOnly cookie, then clears user state and redirects
+   * Also clears localStorage recent categories (like Reddit - logout clears recent)
    */
   const logout = async () => {
     try {
@@ -90,6 +91,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // This ensures UI updates even if network request fails
       console.error('Logout error:', error);
     }
+    
+    // Clear localStorage recent categories on logout (like Reddit)
+    // This ensures user doesn't see previous account's recent categories
+    if (typeof window !== 'undefined') {
+      try {
+        const { clearRecentCategories } = await import('@/lib/recentCategories');
+        clearRecentCategories();
+      } catch (err) {
+        // Ignore errors if module fails to load
+        console.error('Failed to clear recent categories on logout:', err);
+      }
+    }
+    
     // Clear user state (regardless of API call success/failure)
     setUser(null);
     setIsAuthenticated(false);

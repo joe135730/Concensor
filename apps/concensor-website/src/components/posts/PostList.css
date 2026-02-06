@@ -1,0 +1,178 @@
+/* PostList Component Styles */
+
+.post-list-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.post-list-title {
+  font-family: 'Kadwa', sans-serif;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.post-list-loading,
+.post-list-error,
+.post-list-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.125rem;
+  color: #666;
+}
+
+.post-list-error {
+  color: #d32f2f;
+}
+
+.post-list-empty {
+  color: #999;
+  font-style: italic;
+}
+
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.post-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.post-title {
+  font-family: 'Kadwa', sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.75rem;
+}
+
+.post-content {
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.post-footer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.comment-count {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.9rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.vote-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.agree-label,
+.disagree-label {
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: center;
+}
+
+.agree-label {
+  color: #1A4B7C;
+}
+
+.disagree-label {
+  color: #d32f2f;
+}
+
+.progress-bar {
+  flex: 1;
+  display: flex;
+  height: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #e0e0e0;
+}
+
+.progress-agree {
+  background-color: #42a5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 0;
+}
+
+.progress-disagree {
+  background-color: #ef5350;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .post-list-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .post-list-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .post-card {
+    padding: 1rem;
+  }
+
+  .post-title {
+    font-size: 1.25rem;
+  }
+
+  .vote-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .agree-label,
+  .disagree-label {
+    min-width: auto;
+  }
+}
+

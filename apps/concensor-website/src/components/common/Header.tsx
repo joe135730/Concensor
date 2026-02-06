@@ -5,17 +5,31 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '../../assets/Logo.svg';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import './Header.css';
 
 const Header = () => {
   const { isAuthenticated, user, logout, loading } = useAuth();
   const pathname = usePathname();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Get sidebar context (available on pages with sidebar)
+  const pagesWithSidebar = ['/', '/all', '/popular', '/category', '/posts', '/profile', '/badges', '/ideology', '/dashboard', '/setting'];
+  const hasSidebar = pagesWithSidebar.some(route => pathname === route || pathname?.startsWith(route));
+  let sidebarContext = null;
+  if (hasSidebar) {
+    try {
+      sidebarContext = useSidebar();
+    } catch (e) {
+      // SidebarContext not available (shouldn't happen, but handle gracefully)
+    }
+  }
 
   // List of authenticated routes (routes that require login)
   // If we're on these routes, assume user is authenticated during loading
-  const authenticatedRoutes = ['/home', '/profile'];
+  const authenticatedRoutes = ['/profile'];
   const isAuthenticatedRoute = authenticatedRoutes.some(route => pathname?.startsWith(route));
 
   // Close dropdown when clicking outside
@@ -46,18 +60,38 @@ const Header = () => {
   // If on public route, show public layout
   if (loading) {
     // If we're on an authenticated route, show authenticated header layout
-    // This prevents the glitch when refreshing /home page
     if (isAuthenticatedRoute) {
       return (
         <header className="header">
           <div className="header-container">
             <div className="header-left">
-              <Link href="/home" className="header-logo">
+              <Link href="/" className="header-logo">
                 <img src={Logo} alt="Concensor" className="logo-image" />
               </Link>
             </div>
             <nav className="header-nav">
-              <span className="user-greeting">Hi! ...</span>
+              <form className="header-search" onSubmit={(event) => event.preventDefault()}>
+                <input
+                  type="search"
+                  className="header-search-input"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  aria-label="Search"
+                />
+                <button className="header-search-button" type="submit" aria-label="Submit search">
+                  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </form>
             </nav>
             <div className="header-right">
               <div className="profile-picture-button" style={{ opacity: 0.5 }}>
@@ -72,47 +106,92 @@ const Header = () => {
     }
     
     // Otherwise, show public header layout
-    return (
-      <header className="header">
-        <div className="header-container">
-          <div className="header-left">
-            <Link href="/" className="header-logo">
-              <img src={Logo} alt="Concensor" className="logo-image" />
-            </Link>
-          </div>
-          <nav className="header-nav">
-            <Link href="/" className="nav-link">Home</Link>
-            <Link href="/about" className="nav-link">About</Link>
-            <Link href="/contact" className="nav-link">Contact</Link>
-          </nav>
-          <div className="header-right">
-            {/* Show nothing while loading */}
-          </div>
+  return (
+    <header className="header">
+      <div className="header-container">
+        <div className="header-left">
+          <Link href="/" className="header-logo">
+            <img src={Logo} alt="Concensor" className="logo-image" />
+          </Link>
         </div>
-      </header>
-    );
+        <nav className="header-nav">
+          <form className="header-search" onSubmit={(event) => event.preventDefault()}>
+            <input
+              type="search"
+              className="header-search-input"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              aria-label="Search"
+            />
+            <button className="header-search-button" type="submit" aria-label="Submit search">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
+        </nav>
+        <div className="header-right">
+          {/* Show nothing while loading */}
+        </div>
+      </div>
+    </header>
+  );
   }
 
   return (
     <header className="header">
       <div className="header-container">
         <div className="header-left">
-          <Link href={isAuthenticated ? "/home" : "/"} className="header-logo">
+          {/* Hamburger Menu - Show on pages with sidebar */}
+          {hasSidebar && sidebarContext && (
+            <button
+              className="header-hamburger-button"
+              onClick={sidebarContext.toggleSidebar}
+              aria-label="Toggle sidebar"
+              aria-expanded={sidebarContext.sidebarOpen}
+            >
+              <span className="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+            </button>
+          )}
+          <Link href="/" className="header-logo">
             <img src={Logo} alt="Concensor" className="logo-image" />
           </Link>
         </div>
         <nav className="header-nav">
-          {isAuthenticated ? (
-            <>
-              <span className="user-greeting">Hi! {user?.username}</span>
-            </>
-          ) : (
-            <>
-              <Link href="/" className="nav-link">Home</Link>
-              <Link href="/about" className="nav-link">About</Link>
-              <Link href="/contact" className="nav-link">Contact</Link>
-            </>
-          )}
+          <form className="header-search" onSubmit={(event) => event.preventDefault()}>
+            <input
+              type="search"
+              className="header-search-input"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              aria-label="Search"
+            />
+            <button className="header-search-button" type="submit" aria-label="Submit search">
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M21 21l-4.35-4.35m1.35-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
         </nav>
         <div className="header-right">
           {isAuthenticated ? (
@@ -158,7 +237,7 @@ const Header = () => {
               )}
             </div>
           ) : (
-            <Link href="/login" className="login-button">Login</Link>
+          <Link href="/login" className="login-button">Login</Link>
           )}
         </div>
       </div>

@@ -5,8 +5,7 @@
  * you only need to change the base URL here - all your components will continue to work.
  * 
  * Features:
- * - Automatic token injection (if using localStorage)
- * - Cookie support (for HttpOnly cookies)
+ * - HttpOnly cookie support (automatic authentication via cookies)
  * - Global error handling
  * - Request timeout
  * - Automatic retry for network errors and server errors (5xx)
@@ -14,6 +13,7 @@
  */
 
 import axios, { AxiosError, AxiosInstance } from 'axios';
+import { Category, Post } from '@/types';
 
 // Base URL for API requests
 // For Next.js API routes (same origin), use empty string (relative paths)
@@ -27,7 +27,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || '';
  */
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE, // Base URL prepended to all requests (empty = same origin)
-  headers: {
+    headers: {
     'Content-Type': 'application/json', // Tell server we're sending JSON
   },
   withCredentials: true, // Include cookies in requests (needed for HttpOnly cookies)
@@ -37,25 +37,14 @@ const apiClient: AxiosInstance = axios.create({
 /**
  * Request Interceptor: Runs BEFORE every API request
  * 
- * Purpose: Automatically add authentication token to request headers
- * This way, you don't need to manually add the token in every API call
+ * Note: Authentication is handled via HttpOnly cookies (set by backend).
+ * Cookies are automatically sent with requests when withCredentials: true.
+ * No manual token injection needed.
  */
 apiClient.interceptors.request.use(
   (config) => {
-    // Check if we're in browser (not server-side rendering)
-    // typeof window !== 'undefined' means we're in the browser
-    if (typeof window !== 'undefined') {
-      // Get token from localStorage (if you're using localStorage instead of cookies)
-      const token = localStorage.getItem('token');
-      
-      // If token exists, add it to Authorization header
-      // Format: "Bearer <token>" (standard JWT format)
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    
-    // Return the modified config (with token added)
+    // Cookies are automatically included via withCredentials: true
+    // No need to manually add tokens - backend reads from cookies
     return config;
   },
   (error) => {
@@ -154,11 +143,8 @@ apiClient.interceptors.response.use(
     // If we shouldn't retry, handle the error normally
     // Handle 401 Unauthorized (token expired or invalid)
     if (error.response?.status === 401) {
-      // Clear token from localStorage if it exists
-      // This happens when token expires or is invalid
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-      }
+      // Note: HttpOnly cookies are cleared by the backend on logout
+      // No need to manually clear localStorage (we don't use it for auth)
       
       // Optional: Automatically redirect to login page
       // Uncomment if you want automatic redirect:
@@ -179,7 +165,7 @@ apiClient.interceptors.response.use(
     
     // Reject with error message (will be caught in component's catch block)
     return Promise.reject(new Error(errorMessage));
-  }
+}
 );
 
 /**
@@ -237,15 +223,24 @@ export const api = {
    */
   
   // GET /api/posts - Get all posts
-  getPosts: () =>
-    apiClient.get('/api/posts').then((response) => response.data),
+  getPosts: (params?: { category?: string; mainCategory?: string; subCategory?: string; popular?: boolean; page?: number; limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.category) queryParams.append('category', params.category);
+    if (params?.mainCategory) queryParams.append('mainCategory', params.mainCategory);
+    if (params?.subCategory) queryParams.append('subCategory', params.subCategory);
+    if (params?.popular) queryParams.append('popular', 'true');
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    const query = queryParams.toString();
+    return apiClient.get(`/api/posts${query ? `?${query}` : ''}`).then((response) => response.data);
+  },
   
   // GET /api/posts/:id - Get single post by ID
   getPost: (id: string) =>
     apiClient.get(`/api/posts/${id}`).then((response) => response.data),
   
   // POST /api/posts - Create new post
-  createPost: (data: { title: string; content: string }) =>
+  createPost: (data: { title: string; content: string; mainCategoryId: string; subCategoryId: string }) =>
     apiClient.post('/api/posts', data).then((response) => response.data),
 
   // PUT /api/posts/:id - Update existing post
@@ -257,13 +252,21 @@ export const api = {
     apiClient.delete(`/api/posts/${id}`).then((response) => response.data),
 
   /**
-   * Votes API (for ideology scoring)
+   * Votes API
    * 
    * @param postId - ID of the post to vote on
-   * @param vote - Vote value (strongly_disagree, disagree, neutral, agree, strongly_agree)
+   * @param voteType - Vote type (strongly_disagree, disagree, neutral, agree, strongly_agree)
    */
-  vote: (postId: string, vote: 'strongly_disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly_agree') =>
-    apiClient.post(`/api/posts/${postId}/vote`, { vote }).then((response) => response.data),
+  vote: (postId: string, voteType: 'strongly_disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly_agree') =>
+    apiClient.post(`/api/posts/${postId}/vote`, { voteType }).then((response) => response.data),
+  
+  /**
+   * Get user's vote on a post
+   * 
+   * @param postId - ID of the post
+   */
+  getUserVote: (postId: string) =>
+    apiClient.get(`/api/posts/${postId}/vote`).then((response) => response.data),
 
   /**
    * User/Profile API calls
@@ -276,6 +279,27 @@ export const api = {
   // PUT /api/user/profile - Update current user's profile
   updateProfile: (data: any) =>
     apiClient.put('/api/user/profile', data).then((response) => response.data),
+
+  // GET /api/user/points - Get current user's points and badges
+  getUserPoints: () =>
+    apiClient.get('/api/user/points').then((response) => response.data),
+
+  // POST /api/user/badges/equip - Equip a badge
+  equipBadge: (categoryId: string | null) =>
+    apiClient.post<{ success: boolean; equippedBadgeCategoryId: string | null }>('/api/user/badges/equip', { categoryId })
+      .then((response) => response.data),
+
+  /**
+   * Comments API
+   */
+  
+  // GET /api/posts/[id]/comments - Get all comments for a post
+  getComments: (postId: string) =>
+    apiClient.get(`/api/posts/${postId}/comments`).then((response) => response.data),
+
+  // POST /api/posts/[id]/comments - Create a new comment
+  createComment: (postId: string, data: { content: string; parentId?: string }) =>
+    apiClient.post(`/api/posts/${postId}/comments`, data).then((response) => response.data),
 
   /**
    * Logout API call
@@ -350,5 +374,67 @@ export const api = {
    */
   getIdeology: (userId: string) =>
     apiClient.get(`/api/user/${userId}/ideology`).then((response) => response.data),
+
+  /**
+   * Categories API
+   * 
+   * @param params - Query parameters (mainOnly, parentId, slug)
+   */
+  getCategories: (params?: { mainOnly?: boolean; parentId?: string; slug?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.mainOnly) queryParams.append('mainOnly', 'true');
+    if (params?.parentId) queryParams.append('parentId', params.parentId);
+    if (params?.slug) queryParams.append('slug', params.slug);
+    const query = queryParams.toString();
+    return apiClient.get(`/api/categories${query ? `?${query}` : ''}`).then((response) => response.data);
+  },
+  
+  /**
+   * Get category by slug
+   * 
+   * @param slug - Category slug
+   */
+  getCategoryBySlug: (slug: string) =>
+    apiClient.get<Category>(`/api/categories/${slug}`).then((response) => response.data),
+
+  /**
+   * Saved Posts API
+   * 
+   * Returns posts the current user has saved.
+   */
+  getSavedPosts: () =>
+    apiClient.get<{ posts: Post[] }>('/api/saved').then((response) => response.data.posts),
+
+  /**
+   * Saved Post Status API
+   * 
+   * @param postId - ID of the post to check
+   */
+  getSavedPostStatus: (postId: string) =>
+    apiClient.get<{ saved: boolean }>(`/api/saved/${postId}`).then((response) => response.data),
+
+  /**
+   * Save a post for the current user
+   * 
+   * @param postId - ID of the post to save
+   */
+  savePost: (postId: string) =>
+    apiClient.post<{ saved: boolean }>(`/api/saved/${postId}`).then((response) => response.data),
+
+  /**
+   * Unsave a post for the current user
+   * 
+   * @param postId - ID of the post to unsave
+   */
+  unsavePost: (postId: string) =>
+    apiClient.delete<{ saved: boolean }>(`/api/saved/${postId}`).then((response) => response.data),
+  
+  /**
+   * Get user's recently viewed categories (LRU)
+   * Requires authentication
+   */
+  getRecentCategories: () =>
+    apiClient.get<{ categories: Array<Category & { lastViewedAt: string; viewCount: number }> }>('/api/user/recent-categories')
+      .then((response) => response.data.categories),
 };
 

@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db'; // Database client
 import { generateToken } from '@/lib/auth'; // Auth utilities for generating JWT
+import { applyBadgeDecayOnLogin } from '@/lib/decayService';
 
 /**
  * GET Handler for Email Verification
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
     // ✅ Create redirect response to home page
     // User is now verified and logged in
     const response = NextResponse.redirect(
-      new URL('/home?verified=true', request.url)
+      new URL('/?verified=true', request.url)
     );
 
     // ✅ Set HttpOnly cookie with JWT token
@@ -100,6 +101,14 @@ export async function GET(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,                   // Cookie expires in 7 days (seconds)
       path: '/',                                   // Cookie available for all paths
     });
+
+    // ✅ Apply badge decay on login (non-blocking)
+    try {
+      await applyBadgeDecayOnLogin(db, user.id);
+    } catch (decayError) {
+      // Log error but don't fail login if decay calculation fails
+      console.error('Error applying badge decay on login:', decayError);
+    }
 
     // Return response (cookie is automatically sent to browser)
     return response;

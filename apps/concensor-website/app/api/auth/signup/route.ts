@@ -18,6 +18,7 @@ import crypto from 'crypto'; // Node.js crypto module for generating secure rand
 import { db } from '@/lib/db'; // Database client
 import { hashPassword } from '@/lib/auth'; // Auth utilities
 import { emailService } from '@/lib/email'; // Email service for sending verification emails
+import { initializeRookieBadges } from '@/lib/badgeInit'; // Badge initialization
 
 /**
  * POST Handler for Signup
@@ -220,6 +221,15 @@ export async function POST(request: NextRequest) {
         emailVerificationExpires: verificationExpires, // Token expiration time
       },
     });
+
+    // ✅ Initialize Rookie badges for all categories
+    // New users automatically get Rookie badge (level 1) in all categories
+    try {
+      await initializeRookieBadges(db, user.id);
+    } catch (badgeError) {
+      // Log error but don't fail signup - badges can be initialized later
+      console.error('Failed to initialize badges:', badgeError);
+    }
 
     // ✅ Send verification email
     // emailService.sendVerificationEmail() sends an email with verification link

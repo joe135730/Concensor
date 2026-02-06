@@ -1,0 +1,51 @@
+/* Main Category Page Styles */
+
+.category-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-top: 70px; /* Account for fixed header */
+}
+
+.category-page-content {
+  display: flex;
+  min-height: calc(100vh - 70px);
+  background-color: #f5f5f5;
+  position: relative;
+}
+
+.category-main {
+  flex: 1;
+  padding: 2rem;
+  background-color: #f5f5f5;
+  transition: margin-left 0.3s ease;
+  min-width: 0; /* Allow flex shrinking */
+}
+
+/* Desktop: Category main shifts when sidebar opens/closes */
+@media screen and (min-width: 1024px) {
+  .category-main {
+    margin-left: 0; /* Default: align to screen left when sidebar closed */
+  }
+
+  .category-main.sidebar-open {
+    margin-left: 250px; /* Account for fixed sidebar width when open */
+  }
+}
+
+/* Mobile: Category main doesn't move, always align to screen left */
+@media screen and (max-width: 1023px) {
+  .category-main {
+    width: 100%;
+    margin-left: 0; /* Always align to screen left on mobile */
+    padding-top: 2rem;
+  }
+}
+
+.category-error {
+  text-align: center;
+  padding: 3rem 1rem;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1.125rem;
+  color: #d32f2f;
+}
+

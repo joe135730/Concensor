@@ -11,13 +11,15 @@
  * 3. Create or find user in database
  * 4. Generate JWT token
  * 5. Set HttpOnly cookie
- * 6. Redirect to /home
+ * 6. Redirect to home page (/)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { OAuth2Client } from 'google-auth-library';
 import { db } from '@/lib/db';
 import { generateToken } from '@/lib/auth';
+import { applyBadgeDecayOnLogin } from '@/lib/decayService';
+import { initializeRookieBadges } from '@/lib/badgeInit';
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -188,6 +190,14 @@ export async function GET(request: NextRequest) {
           tokenVersion: 0,
         },
       });
+
+      // Initialize Rookie badges for new Google OAuth users
+      try {
+        await initializeRookieBadges(db, user.id);
+      } catch (badgeError) {
+        // Log error but don't fail login - badges can be initialized later
+        console.error('Failed to initialize badges:', badgeError);
+      }
     }
 
     // Generate JWT token (same as email/password login)
@@ -199,7 +209,7 @@ export async function GET(request: NextRequest) {
 
     // Create response to redirect to home page
     const response = NextResponse.redirect(
-      new URL('/home', request.url)
+      new URL('/', request.url)
     );
 
     // Set HttpOnly cookie with JWT token (same as email/password login)
@@ -213,6 +223,14 @@ export async function GET(request: NextRequest) {
 
     // Clear OAuth state cookie
     response.cookies.delete('oauth_state');
+
+    // Apply badge decay on login (non-blocking)
+    try {
+      await applyBadgeDecayOnLogin(db, user.id);
+    } catch (decayError) {
+      // Log error but don't fail login if decay calculation fails
+      console.error('Error applying badge decay on login:', decayError);
+    }
 
     return response;
   } catch (error: any) {

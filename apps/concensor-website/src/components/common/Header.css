@@ -5,7 +5,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 1001; /* Higher than sidebar to keep header and hamburger visible */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -31,6 +31,45 @@
 .header-left {
   display: flex;
   align-items: center;
+  gap: 1rem; /* Space between hamburger and logo */
+}
+
+/* Hamburger Menu Button in Header */
+.header-hamburger-button {
+  background-color: transparent;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.header-hamburger-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.header-hamburger-button .hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 24px;
+  height: 18px;
+  position: relative;
+}
+
+.header-hamburger-button .hamburger-icon span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+  border-radius: 2px;
+  transition: none; /* Keep as 3 lines always */
 }
 
 .header-logo {
@@ -50,6 +89,8 @@
   display: flex;
   gap: 2rem;
   align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 .nav-link {
@@ -93,6 +134,57 @@
   color: white;
   font-size: 1rem;
   margin-right: 1rem;
+}
+
+.header-search {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+}
+
+.header-search-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background-color: #ffffff;
+  padding: 0 44px 0 16px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1rem;
+  color: #1a2b4a;
+  outline: none;
+}
+
+.header-search-input::placeholder {
+  color: #a9b3c1;
+}
+
+.header-search-input:focus {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.header-search-button {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #7a879a;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header-search-button:hover {
+  background-color: rgba(26, 43, 74, 0.08);
+  color: #1a2b4a;
 }
 
 /* Profile Picture and Dropdown */
@@ -209,5 +301,10 @@
   .login-button {
     padding: 0.4rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .header-search-input {
+    height: 36px;
+    font-size: 0.95rem;
   }
 }

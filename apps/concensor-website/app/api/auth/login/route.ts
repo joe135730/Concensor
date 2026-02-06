@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import validator from 'validator'; // Library for input validation
 import { db } from '@/lib/db'; // Database client
 import { verifyPassword, generateToken } from '@/lib/auth'; // Auth utilities
+import { applyBadgeDecayOnLogin } from '@/lib/decayService';
 
 /**
  * POST Handler for Login
@@ -185,6 +186,15 @@ export async function POST(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 7,                   // Cookie expires in 7 days (in seconds)
       path: '/',                                   // Cookie available for all paths on domain
     });
+
+    // ✅ Apply badge decay on login (non-blocking)
+    // This updates points based on inactivity and updates lastLoginDate
+    try {
+      await applyBadgeDecayOnLogin(db, user.id);
+    } catch (decayError) {
+      // Log error but don't fail login if decay calculation fails
+      console.error('Error applying badge decay on login:', decayError);
+    }
 
     // Return response (cookie is automatically sent to browser)
     return response;

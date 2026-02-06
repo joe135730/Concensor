@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
         id: user.id,
         username: user.username,
         email: user.email,
+        profilePicture: user.profilePicture,
         createdAt: user.createdAt,
         // Don't return passwordHash or tokenVersion
       },

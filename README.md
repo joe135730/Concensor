@@ -13,7 +13,29 @@ Concensor is a social media platform specifically for discussing politics
 ### Installation
 ```bash
 git clone https://github.com/yourusername/concensor.git
-cd concensor
+```
+```bash
+cd apps/concensor-website
+```
+```bash
+# Database (Optional)
+
+# Local development (new machine / fresh DB)
+# after schema changes or fresh install
+npm run db:generate
+# when you need to create/apply dev migrations
+npm run db:migrate
+# after migrations, to populate categories/data
+npm run db:seed
+
+# Production / shared environment
+# Apply any pending migrations to your database (keeps schema in sync)
+npx prisma migrate deploy
+# Regenerate the Prisma Client (keeps generated types/models up to date)
+npx prisma generate
+```
+```bash
+# Setup
 npm install
 npm run dev
 ```

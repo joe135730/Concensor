@@ -6,6 +6,9 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================
+// USER MODEL
+// ============================================
 model User {
   id                       String    @id @default(uuid())
   username                 String?   @unique // Optional for OAuth users
@@ -19,8 +22,202 @@ model User {
   emailVerified            Boolean   @default(false) // Whether email has been verified
   emailVerificationToken   String? // Temporary token for email verification
   emailVerificationExpires DateTime? // Token expiration time
+  
+  // Points and badge system fields
+  points                   Int       @default(0) // Total points across all categories
+  peakPoints               Int       @default(0) // Highest points ever achieved
+  lastLoginDate            DateTime? // For badge decay calculation
+  
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
+  // Relations
+  posts                    Post[]
+  votes                    Vote[]
+  comments                 Comment[]
+  categoryPoints           UserCategoryPoints[]
+  categoryViews            UserCategoryView[]
+  equippedBadgeCategoryId   String? // ID of main category whose badge is currently equipped
+  equippedBadgeCategory    Category? @relation("EquippedBadge", fields: [equippedBadgeCategoryId], references: [id])
+  savedPosts               SavedPost[]
+
   @@map("users")
+}
+
+// ============================================
+// CATEGORY MODEL (Hierarchical)
+// ============================================
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique // e.g., "Politics", "Immigration"
+  slug        String    @unique // e.g., "politics", "immigration"
+  parentId    String? // null for main categories, points to main category for sub categories
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("CategoryHierarchy")
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  mainCategoryPosts    Post[] @relation("MainCategory")
+  subCategoryPosts     Post[] @relation("SubCategory")
+  userCategoryPoints   UserCategoryPoints[]
+  userCategoryViews    UserCategoryView[]
+  equippedBadgeUsers   User[] @relation("EquippedBadge")
+
+  @@index([parentId])
+  @@index([slug])
+  @@map("categories")
+}
+
+// ============================================
+// POST MODEL
+// ============================================
+model Post {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   @db.Text
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Category relationships (both mandatory)
+  mainCategoryId String
+  mainCategory   Category @relation("MainCategory", fields: [mainCategoryId], references: [id])
+  subCategoryId  String
+  subCategory    Category @relation("SubCategory", fields: [subCategoryId], references: [id])
+  
+  status      String   @default("published") // draft, published, archived, deleted
+  
+  // Vote counts (for consensus display)
+  stronglyAgreeCount    Int      @default(0)
+  agreeCount            Int      @default(0)
+  neutralCount          Int      @default(0)
+  disagreeCount         Int      @default(0)
+  stronglyDisagreeCount Int      @default(0)
+  weightedScore         Decimal  @default(0) @db.Decimal(10, 2) // Sum of vote values (-2 to +2)
+  
+  // Engagement counts (for popularity)
+  totalVotes            Int      @default(0) // COUNT of all votes, regardless of direction
+  commentCount          Int      @default(0)
+  viewCount             Int      @default(0)
+  
+  // Popularity score (hot score)
+  hotScore              Decimal  @default(0) @db.Decimal(15, 6) // Calculated: (totalVotes + commentCount*2) / (hoursSincePost + 2)^1.8
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  votes       Vote[]
+  comments    Comment[]
+  savedBy     SavedPost[]
+
+  @@index([authorId])
+  @@index([mainCategoryId])
+  @@index([subCategoryId])
+  @@index([status])
+  @@index([hotScore]) // For efficient popular posts queries
+  @@index([createdAt])
+  @@map("posts")
+}
+
+// ============================================
+// SAVED POST MODEL
+// ============================================
+model SavedPost {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@map("saved_posts")
+}
+
+// ============================================
+// VOTE MODEL
+// ============================================
+model Vote {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voteType  String   // strongly_disagree, disagree, neutral, agree, strongly_agree
+  voteValue Int      // -2, -1, 0, 1, 2 (for easier calculations)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId]) // One vote per user per post
+  @@index([postId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("votes")
+}
+
+// ============================================
+// COMMENT MODEL
+// ============================================
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String    @db.Text
+  parentId  String? // For nested replies
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  status    String    @default("published") // published, deleted
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@map("comments")
+}
+
+// ============================================
+// USER CATEGORY POINTS MODEL (For Badges)
+// ============================================
+model UserCategoryPoints {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId        String // Points to MAIN category only
+  category          Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  points            Int       @default(0) // Points in this category
+  peakPoints        Int       @default(0) // Highest points ever achieved in this category
+  lastLoginDate     DateTime? // For badge decay calculation
+  currentBadgeLevel Int       @default(0) // 0 = no badge, 1-5 = Rookie to Legend
+  peakBadgeLevel    Int       @default(0) // Highest badge level ever achieved
+
+  @@unique([userId, categoryId]) // One record per user per category
+  @@index([userId])
+  @@index([categoryId])
+  @@index([points])
+  @@map("user_category_points")
+}
+
+// ============================================
+// USER CATEGORY VIEW MODEL (For LRU)
+// ============================================
+model UserCategoryView {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId   String // Points to MAIN category only
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  lastViewedAt DateTime  @default(now())
+  viewCount    Int       @default(1) // Optional: track how many times viewed
+
+  @@unique([userId, categoryId]) // One record per user per category
+  @@index([userId, lastViewedAt]) // For efficient LRU queries
+  @@index([categoryId])
+  @@map("user_category_views")
 }

@@ -9,7 +9,7 @@ interface AuthLayoutProps {
  * AuthLayout - For authenticated pages (after login)
  * 
  * Includes Header (with username and profile icon) but NO Footer
- * Use this for: /home, /profile, and other authenticated pages
+ * Use this for: /, /profile, and other authenticated pages
  */
 const AuthLayout = ({ children }: AuthLayoutProps) => {
   return (
