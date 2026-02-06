@@ -349,7 +349,16 @@ export default function PostDetailsPage() {
                 )}
               </div>
               <div className="author-info">
-                <div className="author-name">{post.author.username || 'Anonymous'}</div>
+                <div className="author-name">
+                  {post.author.username || 'Anonymous'}
+                  {post.author.equippedBadge && (
+                    <span
+                      className={`user-badge badge-level-${post.author.equippedBadge.badgeLevel}`}
+                    >
+                      {post.author.equippedBadge.label}
+                    </span>
+                  )}
+                </div>
                 <div className="post-date">{formatDate(post.createdAt)}</div>
               </div>
             </div>

@@ -415,6 +415,13 @@ function CommentItem({
             <div className="comment-meta">
               <div className="comment-author-row">
                 <span className="comment-author-name">{comment.user.username || 'Anonymous'}</span>
+                {comment.user.equippedBadge && (
+                  <span
+                    className={`user-badge badge-level-${comment.user.equippedBadge.badgeLevel}`}
+                  >
+                    {comment.user.equippedBadge.label}
+                  </span>
+                )}
                 {sentimentLabel && (
                   <span className={`comment-sentiment ${sentimentColor}`}>
                     ({sentimentLabel})

@@ -42,9 +42,8 @@
 }
 
 .profile-container {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 2rem 0 3rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -57,18 +56,29 @@
   padding: 2.5rem 3rem;
   box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
   width: 100%;
-  max-width: 760px;
+  max-width: 900px;
 }
 
 .profile-title {
   font-family: 'Kadwa', sans-serif;
   font-size: 2.2rem;
   font-weight: bold;
-  max-width: 760px;
+  max-width: 900px;
   color: #333;
-  margin: 0 auto 2rem;
+  margin: 0 auto 1rem;
   text-align: left;
   width: 100%;
+}
+
+@media (min-width: 1280px) {
+  .profile-container {
+    max-width: 1280px;
+  }
+
+  .profile-card,
+  .profile-title {
+    max-width: 1040px;
+  }
 }
 
 .profile-header-row {

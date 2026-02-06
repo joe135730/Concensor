@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { getBadgeName } from '@/lib/points';
 
 /**
  * Helper function to get authenticated user from request
@@ -59,6 +60,19 @@ export async function GET(
             id: true,
             username: true,
             profilePicture: true,
+            equippedBadgeCategoryId: true,
+            equippedBadgeCategory: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            categoryPoints: {
+              select: {
+                categoryId: true,
+                currentBadgeLevel: true,
+              },
+            },
           },
         },
         mainCategory: {
@@ -97,7 +111,31 @@ export async function GET(
       data: { viewCount: { increment: 1 } },
     });
 
-    return NextResponse.json(post);
+    const equippedCategoryId = post.author.equippedBadgeCategoryId;
+    const equippedCategory = post.author.equippedBadgeCategory;
+    const equippedPoints = equippedCategoryId
+      ? post.author.categoryPoints.find((cp) => cp.categoryId === equippedCategoryId)
+      : null;
+    const badgeLevel = equippedPoints?.currentBadgeLevel ?? 1;
+    const badgeName = getBadgeName(badgeLevel);
+
+    const authorWithBadge = {
+      ...post.author,
+      equippedBadge: equippedCategory
+        ? {
+            categoryId: equippedCategory.id,
+            categoryName: equippedCategory.name,
+            badgeLevel,
+            badgeName,
+            label: `${equippedCategory.name}-${badgeName}`,
+          }
+        : null,
+    };
+
+    return NextResponse.json({
+      ...post,
+      author: authorWithBadge,
+    });
   } catch (error: any) {
     console.error('Error fetching post:', error);
     return NextResponse.json(

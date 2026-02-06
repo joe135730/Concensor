@@ -25,6 +25,13 @@ export interface Post {
     id: string;
     username: string | null;
     profilePicture: string | null;
+    equippedBadge?: {
+      categoryId: string;
+      categoryName: string;
+      badgeLevel: number;
+      badgeName: string;
+      label: string;
+    } | null;
   };
   mainCategoryId: string;
   mainCategory: Category;
@@ -65,6 +72,13 @@ export interface Comment {
     id: string;
     username: string | null;
     profilePicture: string | null;
+    equippedBadge?: {
+      categoryId: string;
+      categoryName: string;
+      badgeLevel: number;
+      badgeName: string;
+      label: string;
+    } | null;
   };
   replies?: Comment[];
   _count?: {

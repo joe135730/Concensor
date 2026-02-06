@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { awardCommentPoints } from '@/lib/pointsService';
 import { recalculateHotScore } from '@/lib/hotScore';
+import { getBadgeName } from '@/lib/points';
 
 /**
  * Helper function to get authenticated user from request
@@ -69,6 +70,19 @@ export async function GET(
             id: true,
             username: true,
             profilePicture: true,
+            equippedBadgeCategoryId: true,
+            equippedBadgeCategory: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            categoryPoints: {
+              select: {
+                categoryId: true,
+                currentBadgeLevel: true,
+              },
+            },
           },
         },
         _count: {
@@ -95,6 +109,19 @@ export async function GET(
             id: true,
             username: true,
             profilePicture: true,
+            equippedBadgeCategoryId: true,
+            equippedBadgeCategory: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            categoryPoints: {
+              select: {
+                categoryId: true,
+                currentBadgeLevel: true,
+              },
+            },
           },
         },
         parent: {
@@ -141,10 +168,38 @@ export async function GET(
     };
 
     // Build tree structure
-    const allComments = [...topLevelComments, ...allReplies];
-    const commentTree = topLevelComments.map((comment) => ({
+    const addEquippedBadge = (comment: any) => {
+      const equippedCategoryId = comment.user?.equippedBadgeCategoryId;
+      const equippedCategory = comment.user?.equippedBadgeCategory;
+      const equippedPoints = equippedCategoryId
+        ? comment.user?.categoryPoints?.find((cp: any) => cp.categoryId === equippedCategoryId)
+        : null;
+      const badgeLevel = equippedPoints?.currentBadgeLevel ?? 1;
+      const badgeName = getBadgeName(badgeLevel);
+
+      return {
+        ...comment,
+        user: {
+          ...comment.user,
+          equippedBadge: equippedCategory
+            ? {
+                categoryId: equippedCategory.id,
+                categoryName: equippedCategory.name,
+                badgeLevel,
+                badgeName,
+                label: `${equippedCategory.name}-${badgeName}`,
+              }
+            : null,
+        },
+      };
+    };
+
+    const decoratedReplies = allReplies.map(addEquippedBadge);
+    const decoratedTopLevel = topLevelComments.map(addEquippedBadge);
+
+    const commentTree = decoratedTopLevel.map((comment) => ({
       ...comment,
-      replies: buildCommentTree(comment.id, allReplies),
+      replies: buildCommentTree(comment.id, decoratedReplies),
       userVote: userVoteMap.get(comment.userId) || null,
     }));
 
